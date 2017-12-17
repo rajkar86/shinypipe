@@ -1,11 +1,14 @@
+# December 2017
+# Author: Karthik Rajendran
+
 #' shinypipe UI for getting user input to
 #' the function fread
 #' @param id namespace id (string)
 #' @param label Label for file input
 #' @param header Defaut value for the header
 #' @param sep Default value for the sep
-#' fread.ui()
-fread.ui <- function(id,
+#' ui.fread()
+ui.fread <- function(id,
                      label = "Input file",
                      header = T,
                      sep = ",") {
@@ -16,7 +19,7 @@ fread.ui <- function(id,
     "Comma" = ",",
     "Semicolon" = ";",
     "Tab" = "\t",
-    "Spaces" = " "
+    "Space" = " "
   )
 
   tagList(
@@ -32,8 +35,8 @@ fread.ui <- function(id,
 #' @param session shiny session
 #' @param params list of arguments (ones that are not already included in UI)
 #' for fread
-#' fread.s()
-fread.s <- function(input, output, session, params = list()) {
+#' s.fread()
+s.fread <- function(input, output, session, params = list()) {
   return(reactive({
     validate(need(input$file, message = FALSE))
 

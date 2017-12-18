@@ -1,5 +1,5 @@
 # December 2017
-# Author: Karthik Rajendran
+# Author: Karthik Rajendran (karthikeyan.rajendran@gmail.com)
 
 #' shinypipe UI for getting user input to
 #' the function fread

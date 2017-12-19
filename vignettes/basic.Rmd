@@ -1,0 +1,72 @@
+---
+title: "shinypipe vignette"
+author: "Karthik Rajendran"
+date: "December, 2017"
+output: 
+  html_document:
+    toc : true
+    toc_float : true
+    code_folding: hide
+runtime: shiny
+---
+
+```{r Library, include=F}
+rm(list = ls())
+
+runWithoutInstall <- T
+ifelse(runWithoutInstall,
+       sapply(list.files(path = "../R/", pattern="*R", full.names = T), source),
+       library(shinypipe))
+```
+
+### File upload 1
+
+You can override the default selected values of *sep* and *header*
+
+```{r }
+ui.fread("file1")
+data1 <- callModule(s.fread, "file1")
+renderTable(head(data1()))
+```
+
+### File upload 2
+
+Here, the user is not given the choice to select separator (by setting sep = NULL).
+Instead, we can specify *sep* directly in the server function. 
+The same may be achieved for header argument as well.
+```{r }
+ui.fread("file2", sep = NULL)
+data2 <- callModule(s.fread, "file2", params = list(sep = ","))
+renderTable(head(data2()))
+```
+
+
+### Formula editor
+
+Upload a csv in the "File upload 1" case above to be able to create a formula. 
+
+```{r}
+renderUI({
+  cols <- list(choices = names(data1()))
+  ui.formula("fml", cols, cols, T, 'small')
+})
+```
+
+#### Output formula
+```{r}
+fml <- callModule(s.formula, "fml")
+renderPrint(fml())
+```
+
+Similar to the "File upload 2" example, the choice of whether to include intercept or not
+can be hidden from the user by setting intercept to NULL.
+
+### Sample formula usage
+
+Perform a simple regression using the formula
+
+```{r}
+renderPrint(summary(lm(fml(), data1())))
+```
+
+

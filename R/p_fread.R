@@ -4,45 +4,48 @@
 #' shinypipe UI for getting user input to
 #' the function fread
 #' @param id namespace id (string)
-#' @param label Label for file input
-#' @param header Defaut value for the header
-#' @param sep Default value for the sep
-#' ui.fread()
+#' @param fileIn list of params for shiny::fileInput to select a file
+#' @param header Whether file has headers (default: T)
+#' If user doesn't need this control, set it to NULL, and control the parameter through params in s.fread
+#' @param sep Selected value for the separator (default: ",")
+#' If user doesn't need this control, set it to NULL, and control the parameter through params in s.fread
+#' @export
 ui.fread <- function(id,
-                     label = "Input file",
-                     header = T,
-                     sep = ",") {
-  # Create a namespace function using the provided id
+                     fileIn = list(label="Input file"),
+                     sep = ",",
+                     header = T) {
   ns <- NS(id)
 
   sepList <- c(
     "Comma" = ",",
     "Semicolon" = ";",
     "Tab" = "\t",
-    "Space" = " "
-  )
+    "Space" = " ",
+    "Pipe" = "|",
+    "Caret" = "^")
 
-  tagList(
-    fileInput(ns("file"), label),
-    checkboxInput(ns("header"), "Has header?", value = header),
-    selectInput(ns("sep"), "Separator", sepList, selected = sep)
-  )
+  l <- list(do.call(fileInput, c(ns("file"), fileIn)))
+  if (!is.null(sep))    { l <- list(l, selectizeInput(ns("sep"), "Separator", sepList, sep)) }
+  if (!is.null(header)) { l <- list(l, checkboxInput(ns("header"), "Has header?", value = header)) }
+
+  tagList(l)
 }
 
 #' shinypipe server function for the function fread
 #' @param input shiny input
 #' @param output shiny output
 #' @param session shiny session
-#' @param params list of arguments (ones that are not already included in UI)
+#' @param params list of arguments for fread that are not already supplied through UI
 #' for fread
-#' s.fread()
+#' @export
 s.fread <- function(input, output, session, params = list()) {
   return(reactive({
     validate(need(input$file, message = FALSE))
 
-    do.call(fread, c(list(input = input$file$datapath,
-                          header = input$header,
-                          sep = input$sep),
-                     params))
+    l <- list(input=input$file$datapath)
+    if (!is.null(input$sep))    { l$sep    <- input$sep}
+    if (!is.null(input$header)) { l$header <- input$header}
+
+    do.call(data.table::fread, c(l, params))
   }))
 }

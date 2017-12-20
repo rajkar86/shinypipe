@@ -1,0 +1,39 @@
+---
+title: "shinypipe ui.params vignette"
+author: "Karthik Rajendran"
+date: "December, 2017"
+output: 
+  flexdashboard::flex_dashboard:
+      orientation: rows
+      source_code: "https://github.com/rajkar86/shinypipe/tree/master/vignettes/params.Rmd"
+runtime: shiny
+---
+
+```{r Library, include=F}
+rm(list = ls())
+
+runWithoutInstall <- T
+ifelse(runWithoutInstall,
+       sapply(list.files(path = "../R/", pattern="*R", full.names = T), source),
+       library(shinypipe))
+```
+
+### Different options for ui.params
+
+```{r}
+ui.params("params", 
+          a = list(1, c(1,10), label = "Overridden label for 'a'"),
+          b = list(2, NA, width = "100%"),
+          c = list("", NA, placeholder = "name"),
+          d = list("negative", c("positive", "negative")),
+          e = list("", c("a", "b"), multiple = T),
+          f = list(selectInput, multiple = T, choices = c(1,2,3)))
+
+```
+
+### Parameter output
+```{r}
+params <- callModule(s.params, "params")
+renderPrint(params())
+```
+

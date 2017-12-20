@@ -48,7 +48,7 @@ Upload a csv in the "File upload 1" case above to be able to create a formula.
 ```{r}
 renderUI({
   cols <- list(choices = names(data1()))
-  ui.formula("fml", cols, cols, T, 'small')
+  ui.formula("fml", cols, cols, T)
 })
 ```
 
@@ -69,4 +69,11 @@ Perform a simple regression using the formula
 renderPrint(summary(lm(fml(), data1())))
 ```
 
+### Using Params widget
+
+```{r}
+# TODO combine with formula
+# ui.params("params")
+# params <- callModule(s.params, "params")
+```
 

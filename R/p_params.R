@@ -30,10 +30,7 @@
 #'
 #' Option 2 - String
 #'
-#' position 1: (Required) Default value(s)
-#' For numeric types - either a scalar or a vector of two values (for a range input)
-#' For string types - the default string
-#' For custom widgets - the function corresponding to the input widget
+#' position 1: (Required) Default value
 #'
 #' position 2: (Required only if additional named arguments are necessary in positions 3+)
 #' list of allowed string values. Use NA if there's no restriction.
@@ -43,7 +40,14 @@
 #' or shiny::textInput otherwise.
 #'
 #'
-#' Option 3 - Custom widgets
+#' Option 3 - Logical
+#'
+#' position 1: (Required) Default value of T or F
+#'
+#' positions 2+: (Optional) list of additional named arguments to be sent to the widget
+#' widget will be shiny::checkboxInput
+#'
+#' Option 4 - Custom widgets
 #'
 #' position 1: (Required) Default value(s)
 #' For numeric types - either a scalar or a vector of two values (for a range input)
@@ -116,6 +120,23 @@ ui.params <- function(id, ...) {
     return (do.call(w, c(ns(id), opt)))
   }
 
+  # Handle logical inputs
+  logi <- function(id, p) {
+
+    if (length(p[[1]]) > 1)
+      stop("Error in ui.params. Logical value can only be a scalar. See ??ui.params for syntax")
+
+    opt <- list(value = p[[1]])
+
+    if (length(p) > 1) {
+      opt <- c(opt, p[-c(1)])
+    }
+
+    if (is.null(opt$label)) opt$label <- id
+
+    return (do.call(shiny::checkboxInput, c(ns(id), opt)))
+  }
+
   custom <- function(id, p) {
 
     if (length(p[[1]]) > 1)
@@ -135,12 +156,13 @@ ui.params <- function(id, ...) {
                 if (length(p) == 0) stop("Error in ui.params. Each parameter needs at least a value. See ??ui.params for syntax")
 
                 type <- class(p[[1]])
-                if (type == "NULL" || type == "logical")
+                if (type == "NULL" || is.na(p[[1]]))
                   type <- class(p[[2]])
 
                 return(switch(type,
                               "numeric" = num(id, p),
                               "character" = str(id, p),
+                              "logical" = logi(id, p),
                               "function" = custom(id, p)
                               ))})
   tagList(l)

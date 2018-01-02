@@ -71,9 +71,19 @@ renderPrint(summary(lm(fml(), data1())))
 
 ### Using Params widget
 
+Fit a generalized linear model
+
 ```{r}
-# TODO combine with formula
-# ui.params("params")
-# params <- callModule(s.params, "params")
+ui.params("params",
+          family  = list("", c("gaussian", "poisson")))
+glmParams <- callModule(s.params, "params")
+
+# renderPrint(c(list(formula = fml(), data = data1()), glmParams()))
+
+renderPrint({
+  f <- do.call(stats::glm, c(list(formula = fml(), data = data1()), glmParams()))
+  f$coefficients
+})
+
 ```
 

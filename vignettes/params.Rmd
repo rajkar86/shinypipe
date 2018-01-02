@@ -22,12 +22,13 @@ ifelse(runWithoutInstall,
 
 ```{r}
 ui.params("params", 
-          a = list(1, c(1,10), label = "Overridden label for 'a'"),
+          a = list(1, c(1,10), label = "Overridden label for variable 'a'"),
           b = list(2, NA, width = "100%"),
           c = list("", NA, placeholder = "name"),
           d = list("negative", c("positive", "negative")),
           e = list("", c("a", "b"), multiple = T),
-          f = list(selectInput, multiple = T, choices = c(1,2,3)))
+          f = list(F, label="Turn feature ON"),
+          g = list(selectizeInput, multiple = T, choices = c(1,2,3)))
 
 ```
 

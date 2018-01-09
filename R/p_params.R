@@ -23,8 +23,8 @@
 #' the remaining parameters will be assumed to be unspecified.
 #' Use NA instead of a vector to skip specifying all of min, max and step
 #'
-#' positions 3+: (Optional) list of additional named arguments to be sent to the widget
-#' widget will be shiny::sliderInput if both min and max (other than inputId, min, max, step)
+#' positions 3+: (Optional) list of additional named arguments (other than inputId, min, max, step)
+#' to be sent to the widget; widget will be shiny::sliderInput if both min and max
 #' are specified in position 2, or shiny::numericInput otherwise.
 #'
 #'
@@ -72,7 +72,7 @@ ui.params <- function(id, ...) {
       stop("Error in ui.params. Numeric value can either be a scalar or a vector of length 2. See ??ui.params for syntax")
 
     rng <- c(NA,NA,NA)
-    # if(length(p) > 1 && !is.na(p[[2]])) { rng <- p[[2]]; length(rng) <- 3 }
+    if(length(p) > 1 && !is.na(p[[2]])) { rng <- p[[2]]; length(rng) <- 3 }
     if (!is.na(rng[1])) opt$min  <- rng[1]
     if (!is.na(rng[2])) opt$max  <- rng[2]
     if (!is.na(rng[3])) opt$step <- rng[3]

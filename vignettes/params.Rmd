@@ -3,9 +3,10 @@ title: "shinypipe ui.params vignette"
 author: "Karthik Rajendran"
 date: "December, 2017"
 output: 
-  flexdashboard::flex_dashboard:
-      orientation: rows
-      source_code: "https://github.com/rajkar86/shinypipe/tree/master/vignettes/params.Rmd"
+  html_document:
+    toc : true
+    toc_float : true
+    code_folding: hide
 runtime: shiny
 ---
 
@@ -18,18 +19,36 @@ ifelse(runWithoutInstall,
        library(shinypipe))
 ```
 
-### Different options for ui.params
+
+## Introduction
+
+This vignette shows different usages of creating widgets through ui.params module.
+See source for the call to ui.params that creates these widgets.
+For practical applications of ui.params, check out the basic.Rmd vignette.
+
+### Widget using ui.params
 
 ```{r}
-ui.params("params", 
-          a = list(1, c(1,10), label = "Overridden label for variable 'a'"),
-          b = list(2, NA, width = "100%"),
-          c = list("", NA, placeholder = "name"),
-          d = list("negative", c("positive", "negative")),
-          e = list("", c("a", "b"), multiple = T),
-          f = list(F, label="Turn feature ON"),
-          g = list(selectizeInput, multiple = T, choices = c(1,2,3)))
+dates <- as.Date("2017-01-05") + (0:5)*3
 
+ui.params("params", 
+          unbounded.num          = list(1),
+          num.with.lower.bound.0 = list(2, c(0)),
+          num.with.upper.bound.6 = list(3, c(NA,6)),
+          bounded.num            = list(3, c(0,10)),
+          bounded.num.with.steps = list(4, c(0,10), step = 2),
+          num.range              = list(c(4,6), c(0,10), step = 2),
+          overidden.label        = list(2, NA, label = "Num with overidden label", width = '100%'),
+          date                   = list(dates[3]),
+          unbounded.date.range   = list(range(dates)),
+          bounded.date           = list(dates[3], range(dates), step = 2),
+          bounded.date.range     = list(dates[2:3], range(dates), step = 2),
+          text                   = list("", NA, placeholder = "name"),
+          text.from.options      = list("negative", c("positive", "negative")),
+          multiple.selection     = list("", c("a", "b", "c", "d", "e"), multiple = T),
+          feature                = list(F, label="Turn feature ON"), # Also illustrates overridding the label
+          custom.widget          = list(selectizeInput, multiple = T, choices = c(1,2,3))
+          )
 ```
 
 ### Parameter output
@@ -37,4 +56,3 @@ ui.params("params",
 params <- callModule(s.params, "params")
 renderPrint(params())
 ```
-

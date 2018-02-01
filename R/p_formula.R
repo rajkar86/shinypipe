@@ -17,8 +17,8 @@ ui.formula <- function(id, y, x, intercept = NULL, theme = 'large') {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
-  if(!exists("label", where=y)) { y$label <- "Y"}
-  if(!exists("label", where=x)) { x$label <- "X"}
+  if(!exists("label", where=y)) {y$label <- "Y"}
+  if(!exists("label", where=x)) {x$label <- "X"}
 
   l <- switch(theme,
               "large" = list(do.call(selectizeInput, c(inputId = ns("y"), multiple = F, y)),

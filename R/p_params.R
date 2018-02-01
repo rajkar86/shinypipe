@@ -17,13 +17,13 @@
 #' A scalar, or a vector of two values (for a range input)
 #'
 #' position 2: (Required only if additional named arguments are necessary in positions 3+)
-#' vector of (min, max, step), if applicable.
-#' Set elements of the vector to NA to skip specifying one or more of min, max and step.
+#' vector of (min, max), if applicable.
+#' Set elements of the vector to NA to skip specifying min or max.
 #' If one or more element are NA, the vector is of size less than three,
 #' the remaining parameters will be assumed to be unspecified.
 #' Use NA instead of a vector to skip specifying all of min, max and step
 #'
-#' positions 3+: (Optional) list of additional named arguments (other than inputId, min, max, step)
+#' positions 3+: (Optional) list of additional named arguments (other than inputId, min, max)
 #' to be sent to the widget; widget will be shiny::sliderInput if both min and max
 #' are specified in position 2, or shiny::numericInput otherwise.
 #'
@@ -57,49 +57,86 @@
 #'
 #' positions 2+: (Optional) list of additional named arguments to be sent to the widget
 #' default for label is the name of the list
-
 #' @export
 
 ui.params <- function(id, ...) {
   ns <- NS(id)
 
-  # Handle numeric inputs
-  num <- function(id, p) {
+  # Handle date inputs
+  numeric.input <- function(id, p) {
 
     opt <- list(value = p[[1]])
 
     if (length(opt$value) > 2)
-      stop("Error in ui.params. Numeric value can either be a scalar or a vector of length 2. See ??ui.params for syntax")
+      stop("Error in ui.params: Numeric value can either be a scalar
+             or a vector of length 2. See ??ui.params for syntax")
 
-    rng <- c(NA,NA,NA)
-    if(length(p) > 1 && !is.na(p[[2]])) { rng <- p[[2]]; length(rng) <- 3 }
-    if (!is.na(rng[1])) opt$min  <- rng[1]
-    if (!is.na(rng[2])) opt$max  <- rng[2]
-    if (!is.na(rng[3])) opt$step <- rng[3]
+    rng <- c(NA,NA)
+    if(length(p) > 1) { rng <- p[[2]]; length(rng) <- 2 }
+    opt$min  <- rng[1]
+    opt$max  <- rng[2]
 
     if (length(p) > 2) {
       opt <- c(opt, p[-c(1:2)])
     }
 
-    rangeKnown <- !is.null(opt$min) && !is.null(opt$max)
+    boundsKnown <- !is.na(opt$min) && !is.na(opt$max)
 
-    if (!rangeKnown && length(opt$value) > 1)
-      stop("Error in ui.params. min and max need to be specified
-           in second position for range inputs. If you need unbounded arguments,
+    if (!boundsKnown && length(opt$value) > 1)
+      stop("Error in ui.params: min and max need to be specified
+           in second position for numeric range inputs. If you need unbounded arguments,
            use separate parameters. See ??ui.params for syntax")
 
     if (is.null(opt$label)) opt$label <- id
 
-    w <- ifelse(rangeKnown, shiny::sliderInput, shiny::numericInput)
+    w <- ifelse(boundsKnown, shiny::sliderInput, shiny::numericInput)
+
+    return (do.call(w, c(ns(id), opt)))
+  }
+
+  # Handle date inputs
+  Date.input <- function(id, p, type) {
+
+    opt <- list(value = p[[1]])
+
+    if (length(opt$value) > 2)
+      stop("Error in ui.params: Date value can either be a scalar
+             or a vector of length 2. See ??ui.params for syntax")
+
+    rng <- c(NA,NA)
+    if(length(p) > 1) { rng <- p[[2]]; length(rng) <- 2;}
+
+    if (!is.na(rng[1])) opt$min  <- rng[1]
+    if (!is.na(rng[2])) opt$max  <- rng[2]
+
+    if (length(p) > 2) {
+      opt <- c(opt, p[-c(1:2)])
+    }
+
+    boundsKnown <- !is.null(opt$min) && !is.null(opt$max)
+
+    if (is.null(opt$label)) opt$label <- id
+
+    w <- shiny::dateInput
+
+    if (boundsKnown) {
+      w <- shiny::sliderInput
+      if (is.null(opt$timeFormat)) opt$timeFormat = "%Y-%m-%d" #"yyyy-mm-dd"
+    } else if (length(opt$value) == 2) {
+      w <- shiny::dateRangeInput
+      opt$start <- opt$value[1]
+      opt$end   <- opt$value[2]
+      opt$value <- NULL
+    }
 
     return (do.call(w, c(ns(id), opt)))
   }
 
   # Handle string inputs
-  str <- function(id, p) {
+  character.input <- function(id, p) {
 
     if (length(p[[1]]) > 1)
-      stop("Error in ui.params. String value can only be a scalar. See ??ui.params for syntax")
+      stop("Error in ui.params: String value can only be a scalar. See ??ui.params for syntax")
 
     choicesKnown <- (length(p) > 1 && (length(p[[2]]) > 1 || !is.na(p[[2]])))
 
@@ -121,10 +158,10 @@ ui.params <- function(id, ...) {
   }
 
   # Handle logical inputs
-  logi <- function(id, p) {
+  logical.input <- function(id, p) {
 
     if (length(p[[1]]) > 1)
-      stop("Error in ui.params. Logical value can only be a scalar. See ??ui.params for syntax")
+      stop("Error in ui.params: Logical value can only be a scalar. See ??ui.params for syntax")
 
     opt <- list(value = p[[1]])
 
@@ -137,10 +174,9 @@ ui.params <- function(id, ...) {
     return (do.call(shiny::checkboxInput, c(ns(id), opt)))
   }
 
-  custom <- function(id, p) {
-
+  function.input <- function(id, p) {
     if (length(p[[1]]) > 1)
-      stop("Error in ui.params. Specify a unique widget function. See ??ui.params for syntax")
+      stop("Error in ui.params: Specify a unique widget function. See ??ui.params for syntax")
 
     w <- p[[1]]
     opt <- c(p[-c(1)])
@@ -153,18 +189,17 @@ ui.params <- function(id, ...) {
               function(i){
                 id <- names(params)[i]
                 p <- params[[i]]
-                if (length(p) == 0) stop("Error in ui.params. Each parameter needs at least a value. See ??ui.params for syntax")
+                if (length(p) == 0)
+                  stop("Error in ui.params: Each parameter needs at least a default value. See ??ui.params for syntax")
 
                 type <- class(p[[1]])
-                if (type == "NULL" || is.na(p[[1]]))
+                if (type == "NULL" || (type != "function" && is.na(p[[1]])))
                   type <- class(p[[2]])
 
-                return(switch(type,
-                              "numeric" = num(id, p),
-                              "character" = str(id, p),
-                              "logical" = logi(id, p),
-                              "function" = custom(id, p)
-                              ))})
+                try(
+                return(do.call(paste0(type, ".input"), list(id,p)))
+                )
+              })
   tagList(l)
 }
 
@@ -174,6 +209,6 @@ ui.params <- function(id, ...) {
 #' @param output shiny output
 #' @param session shiny session
 #' @export
-s.params <- function(input, output, session) {
+s.params <- function (input, output, session) {
   return(reactive(reactiveValuesToList(input)))
 }

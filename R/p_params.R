@@ -11,7 +11,7 @@
 #' The default label for the widget will also use this name (unless overridden)
 #' Each argument must itself be a list. This inner list must be in one of the following formats:
 #'
-#' Option 1 - Numeric
+#' Option 1 - Numeric/Date types
 #'
 #' position 1: (Required) Default value(s)
 #' A scalar, or a vector of two values (for a range input)

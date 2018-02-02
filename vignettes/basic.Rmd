@@ -12,11 +12,18 @@ runtime: shiny
 
 ```{r Library, include=F}
 rm(list = ls())
+library(datasets)
+library(data.table)
+library(ggplot2)
 
 runWithoutInstall <- T
 ifelse(runWithoutInstall,
        sapply(list.files(path = "../R/", pattern="*R", full.names = T), source),
        library(shinypipe))
+
+data(mtcars)
+rv <- reactiveValues(table=as.data.table(mtcars))
+rm(mtcars)
 ```
 
 ### File upload 1
@@ -25,8 +32,8 @@ You can override the default selected values of *sep* and *header*
 
 ```{r }
 ui.fread("file1")
-data1 <- callModule(s.fread, "file1")
-renderTable(head(data1()))
+r.data1 <- callModule(s.fread, "file1")
+renderTable(head(r.data1()))
 ```
 
 ### File upload 2
@@ -36,26 +43,36 @@ Instead, we can specify *sep* directly in the server function.
 The same may be achieved for header argument as well.
 ```{r }
 ui.fread("file2", sep = NULL)
-data2 <- callModule(s.fread, "file2", params = list(sep = ","))
-renderTable(head(data2()))
+r.data2 <- callModule(s.fread, "file2", params = list(sep = ","))
+renderTable(head(r.data2()))
 ```
 
+#### Table used in the rest of the vignette
+
+We will either use the preloaded table or whichever table was uploaded the latest from the file upload widgets above.
+```{r}
+r.data <- reactive(as.data.table(rv$table))
+observe(react.val$table <- r.data1())
+observe(react.val$table <- r.data2())
+renderTable(head(r.data()))
+```
 
 ### Formula editor
 
-Upload a csv in the "File upload 1" case above to be able to create a formula. 
+Formulas can be dynamically constructed using column names of the tables
 
 ```{r}
 renderUI({
-  cols <- list(choices = names(data1()))
+  cols <- list(choices = names(r.data()))
   ui.formula("fml", cols, cols, T)
 })
 ```
 
 #### Output formula
+
 ```{r}
-fml <- callModule(s.formula, "fml")
-renderPrint(fml())
+r.fml <- callModule(s.formula, "fml")
+renderPrint(r.fml())
 ```
 
 Similar to the "File upload 2" example, the choice of whether to include intercept or not
@@ -66,7 +83,23 @@ can be hidden from the user by setting intercept to NULL.
 Perform a simple regression using the formula
 
 ```{r}
-renderPrint(summary(lm(fml(), data1())))
+renderPrint(summary(lm(r.fml(), r.data())))
+```
+
+
+### Plot widget 
+
+```{r}
+r.y <- callModule(s.formula.y, "fml")
+r.xVec <- callModule(s.formula.x, "fml")
+
+## TODO change this once ui.formula is upgraded
+renderUI(radioButtons("xToPlot", "Choose x to plot", choices = r.xVec(), inline = T))
+r.x <- reactive(input$xToPlot)
+
+ui.plot("plot")
+r.brushedData <- callModule(s.plot, "plot", reactive(if (!is.null(r.x())) geom_point(aes_string(x=r.x(), y=r.y()))), r.data)
+
 ```
 
 ### Using Params widget
@@ -76,14 +109,13 @@ Fit a generalized linear model
 ```{r}
 ui.params("params",
           family  = list("", c("gaussian", "poisson")))
-glmParams <- callModule(s.params, "params")
-
-# renderPrint(c(list(formula = fml(), data = data1()), glmParams()))
+r.glmParams <- callModule(s.params, "params")
 
 renderPrint({
-  f <- do.call(stats::glm, c(list(formula = fml(), data = data1()), glmParams()))
+  f <- do.call(stats::glm, c(list(formula = r.fml(), data = r.data()), r.glmParams()))
   f$coefficients
 })
 
 ```
+
 

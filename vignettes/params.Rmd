@@ -47,7 +47,7 @@ ui.params("params",
           text.from.options      = list("negative", c("positive", "negative")),
           multiple.selection     = list("", c("a", "b", "c", "d", "e"), multiple = T),
           feature                = list(F, label="Turn feature ON"), # Also illustrates overridding the label
-          custom.widget          = list(selectizeInput, multiple = T, choices = c(1,2,3))
+          custom.widget          = list(selectizeInput, multiple = T, choices = c(2,3,5,7))
           )
 ```
 

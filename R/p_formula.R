@@ -5,26 +5,33 @@
 #' @param id namespace id (string)
 #' @param y For y selection, list of params for either shiny::selectizeInput or shiny::radioButtons
 #' as determined by theme parameter. inputId should not be specified, and for selectizeInput, 'multiple' should not be specified
-#' (default for label for the widget is "Y")
+#' (default for label for the widget is "Y"). In most cases, choices is the only element that is actually needed.
 #' @param x For x selection, list of params for either shiny::selectizeInput or shiny::radioButtons
 #' as determined by theme parameter. inputId should not be specified, and for selectizeInput, 'multiple' should not be specified
-#' (default for label for the widget is "X")
+#' (default for label for the widget is "X"). In most cases, choices is the only element that is actually needed to be specified.
+#' @param simpleFormula boolean indicating if the UI needs to be restricted to cases with only one explanatory variable
 #' @param intercept default value for whether to use intercept (if user doesn't need this control, set it to NULL, and control the parameter through s.formula)
 #' @param theme 'small' or 'large' (default is 'large')
 #' @export
 
-ui.formula <- function(id, y, x, intercept = NULL, theme = 'large') {
+ui.formula <- function(id, y, x, intercept = NULL,  simpleFormula = F, theme = 'large') {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
   if(!exists("label", where=y)) {y$label <- "Y"}
   if(!exists("label", where=x)) {x$label <- "X"}
 
+  if (theme == "small") {
+    if(!exists("inline", where=y)) {y$inline <- T}
+    if(!exists("inline", where=x)) {x$inline <- T}
+  }
+
   l <- switch(theme,
               "large" = list(do.call(selectizeInput, c(inputId = ns("y"), multiple = F, y)),
-                             do.call(selectizeInput, c(inputId = ns("x"), multiple = T, x))),
+                             do.call(selectizeInput, c(inputId = ns("x"), multiple = !simpleFormula, x))),
               "small" = list(do.call(radioButtons, c(inputId = ns("y"), y)),
-                             do.call(checkboxGroupInput, c(inputId = ns("x"), x)))
+                             do.call(ifelse(simpleFormula, radioButtons, checkboxGroupInput),
+                                     c(inputId = ns("x"), x)))
   )
 
   if (!is.null(intercept))

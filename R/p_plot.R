@@ -1,7 +1,8 @@
 # January 2018
 # Author: Karthik Rajendran (karthikeyan.rajendran@gmail.com)
 
-#' shinypipe UI for getting creating an R formula
+
+#' shinypipe UI for creating a plot with zoom and pan functions
 #' @param id namespace id (string)
 #' @export
 ui.plot <- function(id) {
@@ -27,16 +28,20 @@ ui.plot <- function(id) {
   tagList(l)
 }
 
-#' shinypipe server function for the response (dependent) variable in the formula
+#' shinypipe server function for creating a plot with zoom and pan functions
 #' @param input shiny input
 #' @param output shiny output
 #' @param session shiny session
 #' @param plot 'reactive' plot object that will be appended to a ggplot object
 #' @param data 'reactive' data.table to be passed to ggplot2::ggplot (cannot be NULL)
-#' @param mapping 'reactive' mapping passed to ggplot2::ggplot (Default = aes())
-#' @return The original data with an additional column named "selected_" which is true for points under a brush
+#' @param mapping 'reactive' mapping passed to ggplot2::ggplot [Default: reactive(aes())]
+#' @param selected.colname col name for the additional column that indicates whether the
+#' row is selected (within the brushed region) or not [Default: "selected"]
+#' @return The original data with an additional column with the name given by selected.colname
+#' which is true for points under a brush
 #' @export
-s.plot <- function(input, output, session, plot, data, mapping = reactive(aes())) {
+#' @import data.table
+s.plot <- function(input, output, session, plot, data, mapping = reactive(aes()), selected.colname = "selected") {
 
   rangeExtend <- function(r, f) { r + c(-f,f) * diff(r) }
 
@@ -81,10 +86,13 @@ s.plot <- function(input, output, session, plot, data, mapping = reactive(aes())
   })
 
   brushedData <- reactive({
-    t.data <- data()[, selected_ := F]
+    dt <- data.table::copy(data())
+    dt <- dt[, selected_ := F]
     if(!is.null(input$brush))
-      t.data <- brushedPoints(data(), input$brush, allRows = T)
-    t.data
+      dt <- brushedPoints(data(), input$brush, allRows = T)
+    setnames(dt, "selected_", selected.colname)
+    print(dt)
+    as.data.table(dt)
   })
 
   return(brushedData)

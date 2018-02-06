@@ -41,9 +41,11 @@ ui.plot <- function(id) {
 #' which is true for points under a brush
 #' @export
 #' @import data.table
-s.plot <- function(input, output, session, plot, data, mapping = reactive(aes()), selected.colname = "selected") {
-
-  rangeExtend <- function(r, f) { r + c(-f,f) * diff(r) }
+s.plot <- function(input, output, session, plot, data,
+                   mapping = reactive(aes()),
+                   selected.colname = "selected",
+                   x.datatype = "numeric",
+                   y.datatype = "numeric") {
 
   val <- reactiveValues(zoomBrush=NULL)
 
@@ -78,8 +80,11 @@ s.plot <- function(input, output, session, plot, data, mapping = reactive(aes())
 
     brush <- val$zoomBrush
     if (!is.null(brush)) {
-      p <- p + coord_cartesian(xlim = rangeExtend(c(brush$xmin, brush$xmax), 0.1),
-                               ylim = rangeExtend(c(brush$ymin, brush$ymax),0.1), expand = FALSE)
+      xlim <- c(brush$xmin, brush$xmax)
+      if (class(data()[,get(toString(brush$mapping$x))]) == "Date")
+        xlim <- as.Date(xlim)
+      p <- p + coord_cartesian(xlim = xlim,
+                               ylim = c(brush$ymin, brush$ymax), expand = T)
       output$message <- renderText("Drag region to pan. Double click to reset.")
     }
     p
@@ -91,7 +96,6 @@ s.plot <- function(input, output, session, plot, data, mapping = reactive(aes())
     if(!is.null(input$brush))
       dt <- brushedPoints(data(), input$brush, allRows = T)
     setnames(dt, "selected_", selected.colname)
-    print(dt)
     as.data.table(dt)
   })
 

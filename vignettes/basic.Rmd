@@ -57,7 +57,51 @@ observe(react.val$table <- r.data2())
 renderTable(head(r.data()))
 ```
 
-### Formula editor
+### Simple Formula editor
+
+Formulas can be dynamically constructed using column names of the tables. Here, we will restrict the user to one explanatory variable by setting the parameter simpleFormula to TRUE.
+
+```{r}
+renderUI({
+  cols <- list(choices = names(r.data())[1:5])
+  ui.formula("form", cols, cols, simpleFormula = T, theme = "small")
+})
+```
+
+#### Output formula
+
+```{r}
+r.form <- callModule(s.formula, "form")
+renderPrint(r.form())
+```
+
+
+### Plot widget (formula usage)
+
+```{r}
+
+r.yVal <- callModule(s.formula.y, "form")
+r.xVal <- callModule(s.formula.x, "form")
+
+ui.plot("plot")
+r.plot <- reactive(geom_point(aes_string(x=r.xVal(), y=r.yVal())))
+r.brushedData <- callModule(s.plot, "plot", r.plot, r.data)
+
+```
+
+#### Selected Data
+
+```{r}
+renderTable({
+  dt <- r.brushedData()
+  dt <- dt[which(dt$selected),]
+  dt$selected <- NULL
+  dt
+})
+```
+
+
+### Formula editor: example 1
 
 Formulas can be dynamically constructed using column names of the tables
 
@@ -75,10 +119,10 @@ r.fml <- callModule(s.formula, "fml")
 renderPrint(r.fml())
 ```
 
-Similar to the "File upload 2" example, the choice of whether to include intercept or not
-can be hidden from the user by setting intercept to NULL.
+The choice of whether to include intercept or not can be hidden from the user by leaving 
+the intercept to its default value of NULL as shown in the "Simple formula editor" example.
 
-### Sample formula usage
+### Formula editor: example 2
 
 Perform a simple regression using the formula
 
@@ -86,23 +130,7 @@ Perform a simple regression using the formula
 renderPrint(summary(lm(r.fml(), r.data())))
 ```
 
-
-### Plot widget 
-
-```{r}
-r.y <- callModule(s.formula.y, "fml")
-r.xVec <- callModule(s.formula.x, "fml")
-
-## TODO change this once ui.formula is upgraded
-renderUI(radioButtons("xToPlot", "Choose x to plot", choices = r.xVec(), inline = T))
-r.x <- reactive(input$xToPlot)
-
-ui.plot("plot")
-r.brushedData <- callModule(s.plot, "plot", reactive(if (!is.null(r.x())) geom_point(aes_string(x=r.x(), y=r.y()))), r.data)
-
-```
-
-### Using Params widget
+### Using params: example 1
 
 Fit a generalized linear model
 
@@ -117,5 +145,24 @@ renderPrint({
 })
 
 ```
+
+### Using params: example 2
+
+```{r}
+ui.params("paramList",
+          name  = list("", NA, placeholder = "Enter your name here", width = '100%'),
+          dob   = list(Sys.Date(), NA, label = "Date of birth"))
+r.paramList <- callModule(s.params, "paramList")
+
+my.f <- function(name, dob) {
+  age <- (Sys.Date() - dob)
+  if (is.null(name) || name == "") return ("Enter your name above.");
+  if (age <= 0) return ("Enter a valid date");
+  return (paste0("You're ", age, " day(s) old, ", name, "."))
+} 
+
+renderPrint(do.call(my.f, r.paramList()))
+```
+
 
 

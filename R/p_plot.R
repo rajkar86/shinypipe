@@ -4,12 +4,13 @@
 
 #' shinypipe UI for creating a plot with zoom and pan functions
 #' @param id namespace id (string)
+#' @param height height of the widget
 #' @export
-ui.plot <- function(id) {
+ui.plot <- function(id, height = 400) {
   # Create a namespace function using the provided id
   ns <- NS(id)
-
   l <- list(
+    fillCol(height = height, flex = c(NA, 1),
     fixedRow(
       column(2,tags$div(title = paste("Zoom - zoom on selection (Double-click outside the selected region to reset)",
                                       sep = "\n"),
@@ -24,7 +25,7 @@ ui.plot <- function(id) {
                click    = ns("click"),
                hover    = ns("hover"),
                dblclick = ns("dblclick")))
-
+  )
   tagList(l)
 }
 

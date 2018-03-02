@@ -16,29 +16,26 @@ The widget value will be returned under this name by s.params.
 The default label for the widget will also use this name (unless overridden)
 Each argument must itself be a list. This inner list must be in one of the following formats:
 
-Option 1 - Numeric
+Option 1 - Numeric/Date types
 
 position 1: (Required) Default value(s)
 A scalar, or a vector of two values (for a range input)
 
 position 2: (Required only if additional named arguments are necessary in positions 3+)
-vector of (min, max, step), if applicable.
-Set elements of the vector to NA to skip specifying one or more of min, max and step.
+vector of (min, max), if applicable.
+Set elements of the vector to NA to skip specifying min or max.
 If one or more element are NA, the vector is of size less than three,
 the remaining parameters will be assumed to be unspecified.
 Use NA instead of a vector to skip specifying all of min, max and step
 
-positions 3+: (Optional) list of additional named arguments to be sent to the widget
-widget will be shiny::sliderInput if both min and max (other than inputId, min, max, step)
+positions 3+: (Optional) list of additional named arguments (other than inputId, min, max)
+to be sent to the widget; widget will be shiny::sliderInput if both min and max
 are specified in position 2, or shiny::numericInput otherwise.
 
 
 Option 2 - String
 
-position 1: (Required) Default value(s)
-For numeric types - either a scalar or a vector of two values (for a range input)
-For string types - the default string
-For custom widgets - the function corresponding to the input widget
+position 1: (Required) Default value
 
 position 2: (Required only if additional named arguments are necessary in positions 3+)
 list of allowed string values. Use NA if there's no restriction.
@@ -48,7 +45,14 @@ widget will be shiny::selectizeInput if a list of allowed string is specified,
 or shiny::textInput otherwise.
 
 
-Option 3 - Custom widgets
+Option 3 - Logical
+
+position 1: (Required) Default value of T or F
+
+positions 2+: (Optional) list of additional named arguments to be sent to the widget
+widget will be shiny::checkboxInput
+
+Option 4 - Custom widgets
 
 position 1: (Required) Default value(s)
 For numeric types - either a scalar or a vector of two values (for a range input)

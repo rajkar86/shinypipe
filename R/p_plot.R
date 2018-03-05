@@ -77,7 +77,7 @@ s.plot <- function(input, output, session, plot, data,
   })
 
   output$plot <- renderPlot({
-    p <- ggplot2::ggplot(data = data(), mapping()) + plot()
+    p <- ggplot2::ggplot(data = data(), mapping()) + theme_light(base_size = 16) + plot()
 
     brush <- val$zoomBrush
     if (!is.null(brush)) {

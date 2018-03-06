@@ -52,8 +52,8 @@ renderTable(head(r.data2()))
 We will either use the preloaded table or whichever table was uploaded the latest from the file upload widgets above.
 ```{r}
 r.data <- reactive(as.data.table(rv$table))
-observe(react.val$table <- r.data1())
-observe(react.val$table <- r.data2())
+observe(rv$table <- r.data1())
+observe(rv$table <- r.data2())
 renderTable(head(r.data()))
 ```
 
@@ -85,7 +85,7 @@ r.xVal <- callModule(s.formula.x, "form")
 
 ui.plot("plot")
 r.plot <- reactive(geom_point(aes_string(x=r.xVal(), y=r.yVal())))
-r.brushedData <- callModule(s.plot, "plot", r.plot, r.data)
+r.brushedData <- callModule(s.plot, "plot", r.plot, r.data, selected.colname = "selected")
 
 ```
 
@@ -94,7 +94,7 @@ r.brushedData <- callModule(s.plot, "plot", r.plot, r.data)
 ```{r}
 renderTable({
   dt <- r.brushedData()
-  dt <- dt[which(dt$selected),]
+  dt <- dt[selected == T,]
   dt$selected <- NULL
   dt
 })

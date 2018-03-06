@@ -37,16 +37,15 @@ ui.plot <- function(id, height = 400) {
 #' @param data 'reactive' data.table to be passed to ggplot2::ggplot (cannot be NULL)
 #' @param mapping 'reactive' mapping passed to ggplot2::ggplot [Default: reactive(aes())]
 #' @param selected.colname col name for the additional column that indicates whether the
-#' row is selected (within the brushed region) or not [Default: "selected"]
+#' row is selected (within the brushed region) or not.
+#' If NULL is provided, only selected columns will be returned [Default: NULL]
 #' @return The original data with an additional column with the name given by selected.colname
 #' which is true for points under a brush
 #' @export
 #' @import data.table
 s.plot <- function(input, output, session, plot, data,
                    mapping = reactive(aes()),
-                   selected.colname = "selected",
-                   x.datatype = "numeric",
-                   y.datatype = "numeric") {
+                   selected.colname = NULL) {
 
   val <- reactiveValues(zoomBrush=NULL)
 
@@ -92,11 +91,15 @@ s.plot <- function(input, output, session, plot, data,
   })
 
   brushedData <- reactive({
-    dt <- data.table::copy(data())
-    dt <- dt[, selected_ := F]
-    if(!is.null(input$brush))
-      dt <- brushedPoints(data(), input$brush, allRows = T)
-    setnames(dt, "selected_", selected.colname)
+    allRows <- !is.null(selected.colname)
+    if(is.null(input$brush) & allRows) {
+      dt <- copy(data())
+      dt[, eval(selected.colname) := F]
+    } else {
+      dt <- brushedPoints(data(), input$brush, allRows = allRows)
+      if (allRows)
+        setnames(dt, "selected_", selected.colname)
+    }
     as.data.table(dt)
   })
 

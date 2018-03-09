@@ -1,0 +1,90 @@
+---
+title: "shinypipe plot vignette"
+author: "Karthik Rajendran"
+date: "March 2018"
+output: 
+  html_document:
+    toc : true
+    toc_float : true
+    code_folding: hide
+runtime: shiny
+---
+
+```{r Library, include=F}
+rm(list = ls())
+library(datasets)
+library(data.table)
+library(ggplot2)
+
+runWithoutInstall <- T
+ifelse(runWithoutInstall,
+       sapply(list.files(path = "../R/", pattern="*R", full.names = T), source),
+       library(shinypipe))
+
+n <- 42
+r.data <- reactive(
+  data.table(int = as.integer(runif(n) * 100 + 1), 
+             dbl = runif(n),
+             date = Sys.Date() + 1:n,
+             time = Sys.time() + (1:n)^2 * 60))
+
+```
+
+### Plot any pair of datatypes
+
+
+```{r}
+renderUI({
+  cols <- list(choices = names(r.data()))
+  ui.formula("form", cols, cols, simpleFormula = T, theme = "small")
+})
+r.form <- callModule(s.formula, "form")
+```
+
+### Plot widget (formula usage)
+
+Zoom mode can be turned on and off
+
+```{r}
+
+r.yVal <- callModule(s.formula.y, "form")
+r.xVal <- callModule(s.formula.x, "form")
+
+r.plot <- reactive(geom_point(aes_string(x=r.xVal(), y=r.yVal())))
+
+ui.plot("plot")
+r.brushedData <- callModule(s.plot, "plot", r.plot, r.data)
+
+```
+
+### Secondary plot
+
+* If brush is active in previous plot, show only data within that brush
+* Plot theme has been overridden
+* Brush direction is only x
+
+
+```{r}
+r.data.modify <- reactive({
+  tt <- r.brushedData()
+  if (tt[,.N] == 0)
+    tt <- r.data()
+  tt
+})
+
+r.plot.modify <- reactive(list(
+  r.plot(),
+  theme_classic(base_size = 20)))
+
+ui.plot("plot.modify", brush.direction = "x")
+r.brushedData.modify <- callModule(s.plot, "plot.modify", r.plot.modify, r.data.modify)
+
+```
+
+#### Data for secondary plot
+
+Shows only selected data if there's a selection on the graph
+
+```{r}
+renderDataTable(r.data.modify())
+```

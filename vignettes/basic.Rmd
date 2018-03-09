@@ -92,12 +92,7 @@ r.brushedData <- callModule(s.plot, "plot", r.plot, r.data, selected.colname = "
 #### Selected Data
 
 ```{r}
-renderTable({
-  dt <- r.brushedData()
-  dt <- dt[selected == T,]
-  dt$selected <- NULL
-  dt
-})
+renderDataTable(r.brushedData())
 ```
 
 

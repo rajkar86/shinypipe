@@ -5,32 +5,36 @@
 #' shinypipe UI for creating a plot with zoom and pan functions
 #' @param id namespace id (string)
 #' @param height height of the widget
-#' @param brush.direction to control direction argument of brushOpts
+#' @param brush list of arguments to be sent to brushOpts (except for id and resetOnNet)
+#' @param zoom Default behavior for the brush (set it to NULL to disallow the user to toggle the zoom feature on)
 #' @export
-ui.plot <- function(id, height = 400, brush.direction = "xy") {
+ui.plot <- function(id, height = 400, brush = list(clip = F), zoom = F) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
-  control <- fixedRow(
-    column(2,tags$div(title = paste("Zoom - zoom on selection (Double-click outside the selected region to reset)",
-                                    sep = "\n"),
-                      checkboxGroupInput(ns("toggles"), NULL, inline = T,
-                                         choiceNames = list("Zoom"),
-                                         choiceValues = list("zoom"),
-                                         selected = NULL))), # TODO expose this?
-    column(10,span(textOutput(ns("message"), inline = T), style="color:green"))
-  )
+  if (is.null(zoom))
+    header <- fixedRow(column(12,span(textOutput(ns("message"), inline = T), style="color:green")))
+  else
+    header <- fixedRow(
+      column(2,tags$div(title = paste("Zoom - zoom on selection (Double-click outside the selected region to reset)",
+                                      sep = "\n"),
+                        checkboxInput(ns("zoom"), "Zoom", value = zoom))),
+      column(10,span(textOutput(ns("message"), inline = T), style="color:green"))
+    )
+
+
 
   pObj <- plotOutput(ns("plot"),
-                     brush    = brushOpts(ns("plot_brush"),
-                                          direction = brush.direction,
-                                          clip = F, resetOnNew = T),
+                     brush    = do.call("brushOpts",
+                                        c(list(id=ns("plot_brush"),
+                                               resetOnNew = T),
+                                          brush)),
                      click    = ns("click"),
                      hover    = ns("hover"),
                      dblclick = ns("dblclick"))
 
 
-  l <- list(fillCol(height = height, flex = c(NA, 1), control, pObj))
+  l <- list(fillCol(flex = c(NA, 1), header, pObj))
   tagList(l)
 }
 
@@ -52,35 +56,40 @@ s.plot <- function(input, output, session, plot, data,
                    mapping = reactive(aes()),
                    selected.colname = NULL) {
 
-  val <- reactiveValues(zoomBrush=NULL)
+  val <- reactiveValues(zoomBrush=NULL, click.x=NULL, click.y = NULL)
 
-  output$message <- renderText("")
+  output$message <- renderText("Click to see coordinates")
 
-  observeEvent(input$toggles, {
-    if ("zoom" %in% input$toggles)
+  observeEvent(input$zoom, {
+    if (!is.null(input$zoom) && input$zoom)
       output$message <- renderText("Select a region to zoom.")
     else
       output$message <- renderText("Zoom mode is disabled.")
-  }, ignoreNULL = F)
+  }, ignoreNULL = T)
 
   observeEvent(input$dblclick, {
     val$zoomBrush <- NULL
-    print(input$plot_brush)
     # session$resetBrush(input$plot_brush$brushId)
-    output$message <- renderText("")
+    output$message <- renderText("Click to see coordinates")
   })
 
   observeEvent(input$click, {
-    if (is.null(input$plot_brush) && !("zoom" %in% input$toggles))
-      output$message <- renderText("")
+    if (!is.null(input$click)) {
+      val$click.x <- convertLimitForType(input$click$x, class(data()[,get(toString(input$click$mapping$x))]))
+      val$click.y <- convertLimitForType(input$click$y, class(data()[,get(toString(input$click$mapping$y))]))
+    }
+    if (is.null(input$plot_brush))
+      output$message <- renderText(paste0("Last click: ( ",
+                                          val$click.x, ", ",
+                                          val$click.y, " )"))
   })
 
   observeEvent(input$plot_brush, {
-    if (!is.null(input$plot_brush) && ("zoom" %in% input$toggles)) {
+    if (!is.null(input$plot_brush) && !is.null(input$zoom) && input$zoom) {
       val$zoomBrush <- input$plot_brush
       # session$resetBrush(input$plot_brush$brushId)
     }
-    if (!("zoom" %in% input$toggles))
+    if (is.null(input$zoom) || !input$zoom)
       output$message <- renderText("Click outside the region to deselect.")
   })
 

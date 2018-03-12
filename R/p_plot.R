@@ -43,7 +43,9 @@ ui.plot <- function(id, height = 400, brush = list(clip = F), zoom = F) {
 #' @param output shiny output
 #' @param session shiny session
 #' @param plot 'reactive' plot object that will be appended to a ggplot object
-#' @param data 'reactive' data.table to be passed to ggplot2::ggplot (cannot be NULL)
+#' @param data 'reactive' data.table to be passed to ggplot2::ggplot.
+#' Note that this cannot be NULL as this data is used to deduce types based on the columns plotted.
+#' If more than one data source is needed for your plots, pass in the primary data table.
 #' @param mapping 'reactive' mapping passed to ggplot2::ggplot [Default: reactive(aes())]
 #' @param selected.colname col name for the additional column that indicates whether the
 #' row is selected (within the brushed region) or not.
@@ -73,10 +75,26 @@ s.plot <- function(input, output, session, plot, data,
     output$message <- renderText("Click to see coordinates")
   })
 
+  convertLimitForType <- function(lim, datatype, dataRange = NULL) {
+    # origin used here may be exposed, if necessary
+    ret <- switch (datatype[[1]],
+            "Date" = as.Date(lim, origin="1970-01-01"),
+            "POSIXct" = as.POSIXct(lim, origin = "1970-01-01"),
+            lim
+    )
+
+    if (!is.null(dataRange) && (datatype == "numeric" || datatype == "integer" || datatype == "double"))
+      ret <- round(ret, digits = max(4-log10(dataRange),0))
+    ret
+  }
+
   observeEvent(input$click, {
     if (!is.null(input$click)) {
-      val$click.x <- convertLimitForType(input$click$x, class(data()[,get(toString(input$click$mapping$x))]))
-      val$click.y <- convertLimitForType(input$click$y, class(data()[,get(toString(input$click$mapping$y))]))
+      domain <- input$click$domain
+      val$click.x <- convertLimitForType(input$click$x, class(data()[,get(toString(input$click$mapping$x))]),
+                                         abs(domain$right-domain$left))
+      val$click.y <- convertLimitForType(input$click$y, class(data()[,get(toString(input$click$mapping$y))]),
+                                         abs(domain$top-domain$bottom))
     }
     if (is.null(input$plot_brush))
       output$message <- renderText(paste0("Last click: ( ",
@@ -101,26 +119,19 @@ s.plot <- function(input, output, session, plot, data,
     val$zoomBrush <- NULL # resetOnNew for the cached zoomBrush
   })
 
-  convertLimitForType <- function(lim, datatype) {
-    # origin used here may be exposed, if necessary
-    switch (datatype[[1]],
-      "Date" = as.Date(lim, origin="1970-01-01"),
-      "POSIXct" = as.POSIXct(lim, origin = "1970-01-01"),
-      lim
-    )
-  }
-
   output$plot <- renderPlot({
     p <- ggplot2::ggplot(data = data(), mapping()) + theme_light(base_size = 16) + plot()
 
     brush <- val$zoomBrush
     if (!is.null(brush)) {
+    tryCatch({
       xlim <- c(brush$xmin, brush$xmax)
       ylim <- c(brush$ymin, brush$ymax)
       xlim <- convertLimitForType(xlim, class(data()[,get(toString(brush$mapping$x))]))
       ylim <- convertLimitForType(ylim, class(data()[,get(toString(brush$mapping$y))]))
       p <- p + coord_cartesian(xlim, ylim, expand = F)
       output$message <- renderText("Double click to reset.")
+    })
     }
     p
   })

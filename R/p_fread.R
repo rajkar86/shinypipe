@@ -40,12 +40,13 @@ ui.fread <- function(id,
 #' @export
 s.fread <- function(input, output, session, params = list()) {
   return(reactive({
-    validate(need(input$file, message = FALSE))
+    shiny::validate(need(input$file, message = FALSE))
 
     l <- list(input=input$file$datapath)
     if (!is.null(input$sep))    { l$sep    <- input$sep}
     if (!is.null(input$header)) { l$header <- input$header}
 
+    print(c(l, params))
     do.call(data.table::fread, c(l, params))
   }))
 }

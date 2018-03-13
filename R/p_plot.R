@@ -83,7 +83,10 @@ s.plot <- function(input, output, session, plot, data,
             lim
     )
 
-    if (!is.null(dataRange) && (datatype == "numeric" || datatype == "integer" || datatype == "double"))
+    if (datatype == "integer")
+      ret <- round(ret)
+
+    if (!is.null(dataRange) && (datatype == "numeric" || datatype == "double"))
       ret <- round(ret, digits = max(4-log10(dataRange),0))
     ret
   }

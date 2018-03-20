@@ -3,10 +3,8 @@ title: "shinypipe plot vignette"
 author: "Karthik Rajendran"
 date: "March 2018"
 output: 
-  html_document:
-    toc : true
-    toc_float : true
-    code_folding: hide
+  flexdashboard::flex_dashboard:
+    orientation: row
 runtime: shiny
 ---
 
@@ -30,7 +28,8 @@ r.data <- reactive(
 
 ```
 
-### Plot any pair of datatypes
+Sidebar {.sidebar}
+====================
 
 
 ```{r}
@@ -41,50 +40,60 @@ renderUI({
 r.form <- callModule(s.formula, "form")
 ```
 
-### Plot widget (formula usage)
 
-Zoom mode can be turned on and off
+Brush
+======
+
+Row 1
+------
+
+### User controls zoom mode; Modify plot; Zoom direction control
 
 ```{r}
-
 r.yVal <- callModule(s.formula.y, "form")
 r.xVal <- callModule(s.formula.x, "form")
 
 r.plot <- reactive(geom_point(aes_string(x=r.xVal(), y=r.yVal())))
 
-ui.plot("plot")
-r.brushedData <- callModule(s.plot, "plot", r.plot, r.data)
+ui.plot("plot.modify")
+r.brushedData.modify <- callModule(s.plot, "plot.modify", r.plot.modify, r.data)
 
 ```
 
-### Secondary plot
+### Selected Data in the left plot (or full data if nothing is selected)
 
-* If brush is active in previous plot, show only data within that brush
-* Plot theme has been overridden
-* Brush direction is only x
+```{r}
+renderDataTable({
+  tt <- r.brushedData.modify()
+  if (tt[,.N] == 0) return (r.data())
+  tt
+})
+```
+
+Row 2
+------
+
+### Brush to select 
 
 
 ```{r}
-r.data.modify <- reactive({
-  tt <- r.brushedData()
-  if (tt[,.N] == 0)
-    tt <- r.data()
-  tt
-})
+
+
 
 r.plot.modify <- reactive(list(
   r.plot(),
   theme_classic(base_size = 20)))
 
-ui.plot("plot.modify", brush.direction = "x")
-r.brushedData.modify <- callModule(s.plot, "plot.modify", r.plot.modify, r.data.modify)
+ui.plot("plot", zoom=NULL)
+r.brushedData <- callModule(s.plot, "plot", r.plot, r.data)
 
 ```
 
-#### Data for secondary plot
+### Shows brushed region from the left
 
-Shows only selected data if there's a selection on the graph
 
 ```{r}
-renderDataTable(r.data.modify())
+ui.plot("plot.sec", zoom=NULL)
+r.brushedData.sec <- callModule(s.plot, "plot.sec", r.plot, r.brushedData)
+
 ```

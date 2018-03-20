@@ -8,7 +8,7 @@
 #' @param brush list of arguments to be sent to brushOpts (except for id and resetOnNet)
 #' @param zoom Default behavior for the brush (set it to NULL to disallow the user to toggle the zoom feature on)
 #' @export
-ui.plot <- function(id, height = 400, brush = list(clip = F), zoom = F) {
+ui.plot <- function(id, height = 450, brush = list(clip = F), zoom = F) {
   # Create a namespace function using the provided id
   ns <- NS(id)
 
@@ -34,7 +34,7 @@ ui.plot <- function(id, height = 400, brush = list(clip = F), zoom = F) {
                      dblclick = ns("dblclick"))
 
 
-  l <- list(fillCol(flex = c(NA, 1), header, pObj))
+  l <- list(fillCol(height = height, flex = c(NA, 1), header, pObj))
   tagList(l)
 }
 

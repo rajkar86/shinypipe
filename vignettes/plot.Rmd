@@ -34,8 +34,10 @@ Sidebar {.sidebar}
 
 ```{r}
 renderUI({
-  cols <- list(choices = names(r.data()))
-  ui.formula("form", cols, cols, simpleFormula = T, theme = "small")
+  cols <- names(r.data())
+  colsY <- list(choices = cols)
+  colsX <- list(choices = c(cols[-1], cols[1]))
+  ui.formula("form", colsY, colsX, simpleFormula = T, theme = "small")
 })
 r.form <- callModule(s.formula, "form")
 ```
@@ -48,7 +50,6 @@ Row 1
 ------
 
 ### User controls zoom mode; Modify plot; Zoom direction control
-
 ```{r}
 r.yVal <- callModule(s.formula.y, "form")
 r.xVal <- callModule(s.formula.x, "form")
@@ -61,7 +62,6 @@ r.brushedData.modify <- callModule(s.plot, "plot.modify", r.plot.modify, r.data)
 ```
 
 ### Selected Data in the left plot (or full data if nothing is selected)
-
 ```{r}
 renderDataTable({
   tt <- r.brushedData.modify()
@@ -74,26 +74,18 @@ Row 2
 ------
 
 ### Brush to select 
-
-
 ```{r}
-
-
-
 r.plot.modify <- reactive(list(
   r.plot(),
   theme_classic(base_size = 20)))
 
-ui.plot("plot", zoom=NULL)
+ui.plot("plot", zoom=NULL, brush=list(direction="x"))
 r.brushedData <- callModule(s.plot, "plot", r.plot, r.data)
-
 ```
 
 ### Shows brushed region from the left
-
-
 ```{r}
-ui.plot("plot.sec", zoom=NULL)
+ui.plot("plot.sec", zoom=T)
 r.brushedData.sec <- callModule(s.plot, "plot.sec", r.plot, r.brushedData)
 
 ```

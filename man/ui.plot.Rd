@@ -4,12 +4,16 @@
 \alias{ui.plot}
 \title{shinypipe UI for creating a plot with zoom and pan functions}
 \usage{
-ui.plot(id, height = 400)
+ui.plot(id, height = 450, brush = list(clip = F), zoom = F)
 }
 \arguments{
 \item{id}{namespace id (string)}
 
 \item{height}{height of the widget}
+
+\item{brush}{list of arguments to be sent to brushOpts (except for id and resetOnNet)}
+
+\item{zoom}{Default behavior for the brush (set it to NULL to disallow the user to toggle the zoom feature on)}
 }
 \description{
 shinypipe UI for creating a plot with zoom and pan functions

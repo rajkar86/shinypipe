@@ -5,8 +5,7 @@
 \title{shinypipe server function for creating a plot with zoom and pan functions}
 \usage{
 s.plot(input, output, session, plot, data, mapping = reactive(aes()),
-  selected.colname = "selected", x.datatype = "numeric",
-  y.datatype = "numeric")
+  selected.colname = NULL)
 }
 \arguments{
 \item{input}{shiny input}
@@ -17,12 +16,15 @@ s.plot(input, output, session, plot, data, mapping = reactive(aes()),
 
 \item{plot}{'reactive' plot object that will be appended to a ggplot object}
 
-\item{data}{'reactive' data.table to be passed to ggplot2::ggplot (cannot be NULL)}
+\item{data}{'reactive' data.table to be passed to ggplot2::ggplot.
+Note that this cannot be NULL as this data is used to deduce types based on the columns plotted.
+If more than one data source is needed for your plots, pass in the primary data table.}
 
 \item{mapping}{'reactive' mapping passed to ggplot2::ggplot [Default: reactive(aes())]}
 
 \item{selected.colname}{col name for the additional column that indicates whether the
-row is selected (within the brushed region) or not [Default: "selected"]}
+row is selected (within the brushed region) or not.
+If NULL is provided, only selected columns will be returned [Default: NULL]}
 }
 \value{
 The original data with an additional column with the name given by selected.colname

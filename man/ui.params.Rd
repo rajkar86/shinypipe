@@ -3,14 +3,19 @@
 \name{ui.params}
 \alias{ui.params}
 \title{shinypipe UI for getting creating an interface for obtaining a
-list of parameters from the user}
+list of parameters from the user. This is especially useful
+to encapsulate within a reactive all the arguments required for a single function.}
 \usage{
 ui.params(id, ...)
 }
 \arguments{
 \item{id}{namespace id (string)}
 
-\item{...}{One argument for each parameter for which an interface is required
+\item{...}{One argument for each parameter for which an interface is required.
+
+Use examples in https://github.com/rajkar86/shinypipe/blob/master/vignettes/params.Rmd
+as a quickstart guide.
+
 Each argument must be named.
 The widget value will be returned under this name by s.params.
 The default label for the widget will also use this name (unless overridden)
@@ -65,5 +70,6 @@ default for label is the name of the list}
 }
 \description{
 shinypipe UI for getting creating an interface for obtaining a
-list of parameters from the user
+list of parameters from the user. This is especially useful
+to encapsulate within a reactive all the arguments required for a single function.
 }

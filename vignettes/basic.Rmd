@@ -126,7 +126,7 @@ the intercept to its default value of NULL as shown in the "Simple formula edito
 renderPrint(summary(lm(r.fml(), r.data())))
 ```
 
-### Linear regression (Selected points)
+### Linear regression (Selected)
 
 ```{r}
 renderPrint({
@@ -179,6 +179,4 @@ my.f <- function(name, dob) {
 
 renderPrint(do.call(my.f, r.paramList()))
 ```
-
-
 

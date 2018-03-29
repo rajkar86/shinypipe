@@ -1,7 +1,6 @@
 ---
 title: "shinypipe plot vignette"
 author: "Karthik Rajendran"
-date: "March 2018"
 output: 
   flexdashboard::flex_dashboard:
     orientation: row

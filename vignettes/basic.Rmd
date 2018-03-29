@@ -1,7 +1,6 @@
 ---
 title: "shinypipe vignette"
 author: "Karthik Rajendran"
-date: "December, 2017"
 output: 
   html_document:
     toc : true
@@ -63,8 +62,9 @@ Formulas can be dynamically constructed using column names of the tables. Here, 
 
 ```{r}
 renderUI({
-  cols <- list(choices = names(r.data())[1:5])
-  ui.formula("form", cols, cols, simpleFormula = T, theme = "small")
+  colsY <- list(choices = names(r.data())[1:5])
+  colsX <- list(choices = names(r.data())[-(1:5)])
+  ui.formula("form", colsY, colsX, simpleFormula = T, theme = "small")
 })
 ```
 
@@ -74,7 +74,6 @@ renderUI({
 r.form <- callModule(s.formula, "form")
 renderPrint(r.form())
 ```
-
 
 ### Plot widget (formula usage)
 
@@ -91,8 +90,10 @@ r.brushedData <- callModule(s.plot, "plot", r.plot, r.data, selected.colname = "
 
 #### Selected Data
 
+Show head of the selected data from the plot below:
+
 ```{r}
-renderDataTable(r.brushedData())
+renderDataTable(head(r.brushedData()[selected==T]))
 ```
 
 
@@ -102,8 +103,9 @@ Formulas can be dynamically constructed using column names of the tables
 
 ```{r}
 renderUI({
-  cols <- list(choices = names(r.data()))
-  ui.formula("fml", cols, cols, T)
+  colsY <- list(choices = names(r.data()))
+  colsX <- list(choices = names(r.data()), selected = "wt")
+  ui.formula("fml", colsY, colsX, T)
 })
 ```
 
@@ -111,42 +113,61 @@ renderUI({
 
 ```{r}
 r.fml <- callModule(s.formula, "fml")
+r.fml.y <- callModule(s.formula.y, "fml")
 renderPrint(r.fml())
 ```
 
 The choice of whether to include intercept or not can be hidden from the user by leaving 
 the intercept to its default value of NULL as shown in the "Simple formula editor" example.
 
-### Formula editor: example 2
-
-Perform a simple regression using the formula
+### Linear regression (Full table)
 
 ```{r}
 renderPrint(summary(lm(r.fml(), r.data())))
 ```
 
-### Using params: example 1
-
-Fit a generalized linear model
+### Linear regression (Selected points)
 
 ```{r}
-ui.params("params",
-          family  = list("", c("gaussian", "poisson")))
-r.glmParams <- callModule(s.params, "params")
-
 renderPrint({
-  f <- do.call(stats::glm, c(list(formula = r.fml(), data = r.data()), r.glmParams()))
-  f$coefficients
+  dt <- r.brushedData()[selected==T]
+  if (dt[,.N] == 0)
+    return("Brush the points on the graph above to select portion of the dataset")
+  summary(lm(r.fml(), dt))
 })
-
 ```
 
-### Using params: example 2
+### Using params: SVM example
+
+Run SVM. Note: note all parameters are applicable for all kernels.
+
+```{r}
+library(e1071)
+ui.params("params",
+          kernel  = list("linear", c("linear", "polynomial", "radial", "sigmoid")),
+          cost    = list(1, c(1,10)),
+          gamma   = list(1, c(0,1), step = .01),
+          coef0   = list(0, c(0,1), step = .01),
+          degree  = list(3, c(2,5)))
+r.svmParams <- callModule(s.params, "params")
+
+r.svmModel <- reactive(do.call(svm, c(list(formula = r.fml(), data = r.data()), r.svmParams())))
+
+renderPrint({f <- r.svmModel(); f$call <- NULL; return(summary(f));})
+```
+
+
+#### RMS error
+```{r}
+renderPrint(sqrt(mean((predict(r.svmModel()) - r.data()[,r.fml.y(), with=F])^2)))
+```
+
+### Using params: Example 2
 
 ```{r}
 ui.params("paramList",
           name  = list("", NA, placeholder = "Enter your name here", width = '100%'),
-          dob   = list(Sys.Date(), NA, label = "Date of birth"))
+          dob   = list(Sys.Date()-1, NA, label = "Date of birth"))
 r.paramList <- callModule(s.params, "paramList")
 
 my.f <- function(name, dob) {

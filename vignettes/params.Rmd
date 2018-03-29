@@ -1,7 +1,6 @@
 ---
-title: "shinypipe ui.params vignette"
+title: "shinypipe params vignette"
 author: "Karthik Rajendran"
-date: "December, 2017"
 output: 
   html_document:
     toc : true

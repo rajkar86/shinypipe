@@ -10,7 +10,8 @@
 #' @param ... One argument for each parameter for which an interface is required.
 #'
 #' Use examples in https://github.com/rajkar86/shinypipe/blob/master/vignettes/params.Rmd
-#' as a quickstart guide.
+#' as a quickstart guide. See https://github.com/rajkar86/shinypipe/blob/master/vignettes/basic.Rmd
+#' for a practical example.
 #'
 #' Each argument must be named.
 #' The widget value will be returned under this name by s.params.
@@ -68,7 +69,7 @@
 ui.params <- function(id, ...) {
   ns <- NS(id)
 
-  # Handle date inputs
+  # Handle numeric inputs
   numeric.input <- function(id, p) {
 
     opt <- list(value = p[[1]])
@@ -112,8 +113,8 @@ ui.params <- function(id, ...) {
     rng <- c(NA,NA)
     if(length(p) > 1) { rng <- p[[2]]; length(rng) <- 2;}
 
-    if (!is.na(rng[1])) opt$min  <- rng[1]
-    if (!is.na(rng[2])) opt$max  <- rng[2]
+    if (!is.na(rng[1])) opt$min  <- as.Date(rng[1], origin="1970-01-01")
+    if (!is.na(rng[2])) opt$max  <- as.Date(rng[2], origin="1970-01-01")
 
     if (length(p) > 2) {
       opt <- c(opt, p[-c(1:2)])

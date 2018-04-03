@@ -25,9 +25,12 @@ rv <- reactiveValues(table=as.data.table(mtcars))
 rm(mtcars)
 ```
 
+Vignette to illustrate some elements of R Shiny modules packaged in https://github.com/rajkar86/shinypipe
+Click on show all code on the top right to show code.
+
 ### File upload 1
 
-You can override the default selected values of *sep* and *header*
+*fread* wrapper to get a data.table from a data file
 
 ```{r }
 ui.fread("file1")
@@ -35,11 +38,14 @@ r.data1 <- callModule(s.fread, "file1")
 renderTable(head(r.data1()))
 ```
 
+Note that the default selected values of *sep* and *header* can be overidden.
+
 ### File upload 2
 
-Here, the user is not given the choice to select separator (by setting sep = NULL).
-Instead, we can specify *sep* directly in the server function. 
-The same may be achieved for header argument as well.
+The ability to select separator can be taken away from the user (by setting sep = NULL).
+In this case, *sep* must be directly specified in the server function. 
+The same is true for the header argument as well.
+
 ```{r }
 ui.fread("file2", sep = NULL)
 r.data2 <- callModule(s.fread, "file2", params = list(sep = ","))
@@ -48,7 +54,9 @@ renderTable(head(r.data2()))
 
 #### Table used in the rest of the vignette
 
-We will either use the preloaded table or whichever table was uploaded the latest from the file upload widgets above.
+The sample *cars* table is used for illustration, unless a file was uploaded in one of the widgets above, 
+in which case the table from the latest uploaded file will be used.
+
 ```{r}
 r.data <- reactive(as.data.table(rv$table))
 observe(rv$table <- r.data1())
@@ -58,7 +66,9 @@ renderTable(head(r.data()))
 
 ### Simple Formula editor
 
-Formulas can be dynamically constructed using column names of the tables. Here, we will restrict the user to one explanatory variable by setting the parameter simpleFormula to TRUE.
+Formulas can be dynamically constructed, for instance, using column names of the tables. 
+The user can be restricted to selecting only one explanatory variable by setting the parameter simpleFormula to TRUE.
+This can be useful for plots.
 
 ```{r}
 renderUI({
@@ -75,7 +85,9 @@ r.form <- callModule(s.formula, "form")
 renderPrint(r.form())
 ```
 
-### Plot widget (formula usage)
+### Plot widget
+
+Sample usage of simple formula.
 
 ```{r}
 
@@ -90,7 +102,8 @@ r.brushedData <- callModule(s.plot, "plot", r.plot, r.data, selected.colname = "
 
 #### Selected Data
 
-Show head of the selected data from the plot below:
+Show head of the selected data from the above plot. Click and drag in the plot to select data.
+Note that if selected.colname is not specified, the data returned will only be the selected data, and there's no need to filter subsequently.
 
 ```{r}
 renderDataTable(head(r.brushedData()[selected==T]))
@@ -99,13 +112,13 @@ renderDataTable(head(r.brushedData()[selected==T]))
 
 ### Formula editor: example 1
 
-Formulas can be dynamically constructed using column names of the tables
+The default formula interface allows selecting multiple explanatory variables. And the user can be given control over whether to use intercept by just setting a default selection for the intercept argument.
 
 ```{r}
 renderUI({
-  colsY <- list(choices = names(r.data()))
+  colsY <- list(choices = names(r.data()), selected = "mpg")
   colsX <- list(choices = names(r.data()), selected = "wt")
-  ui.formula("fml", colsY, colsX, T)
+  ui.formula("fml", colsY, colsX, intercept = T)
 })
 ```
 
@@ -122,11 +135,16 @@ the intercept to its default value of NULL as shown in the "Simple formula edito
 
 ### Linear regression (Full table)
 
+Sample usage of formula.
+
 ```{r}
 renderPrint(summary(lm(r.fml(), r.data())))
 ```
 
 ### Linear regression (Selected)
+
+Using the formula only on the selected dataset. Select a portion of the dataset from the plot above to run linear regression
+only on the selected portion of the dataset.
 
 ```{r}
 renderPrint({
@@ -139,16 +157,21 @@ renderPrint({
 
 ### Using params: SVM example
 
-Run SVM. Note: note all parameters are applicable for all kernels.
+Encapsulate UI interface for function parameters without worrying about the widgets to use. Widgets are automatically selected based on type inference; in most cases, users only need to specify a default value and (optionally) a range of allowed values.
+
+The selected parameter values are returned in a list, that can be directly used to call a function through *do.call*. This is a convenient way to group parameters applicable to a specific function.
+
+E.g. Run SVM. Note: not all parameters are applicable for all kernels.
 
 ```{r}
 library(e1071)
 ui.params("params",
           kernel  = list("linear", c("linear", "polynomial", "radial", "sigmoid")),
-          cost    = list(1, c(1,10)),
-          gamma   = list(1, c(0,1), step = .01),
-          coef0   = list(0, c(0,1), step = .01),
-          degree  = list(3, c(2,5)))
+          cost    = list(1),
+          degree  = list(3, c(2,5)),
+          gamma   = list(1, c(0,NA)),
+          coef0   = list(0, c(0,1), step = .01))
+
 r.svmParams <- callModule(s.params, "params")
 
 r.svmModel <- reactive(do.call(svm, c(list(formula = r.fml(), data = r.data()), r.svmParams())))
@@ -164,19 +187,35 @@ renderPrint(sqrt(mean((predict(r.svmModel()) - r.data()[,r.fml.y(), with=F])^2))
 
 ### Using params: Example 2
 
+Just a simple example to illustrate other types of data inputs.
+
 ```{r}
 ui.params("paramList",
           name  = list("", NA, placeholder = "Enter your name here", width = '100%'),
-          dob   = list(Sys.Date()-1, NA, label = "Date of birth"))
+          dob   = list(Sys.Date()-1, c(NA, Sys.Date()), label = "Date of birth"))
 r.paramList <- callModule(s.params, "paramList")
 
-my.f <- function(name, dob) {
+f.age <- function(name, dob) {
   age <- (Sys.Date() - dob)
   if (is.null(name) || name == "") return ("Enter your name above.");
-  if (age <= 0) return ("Enter a valid date");
+  if (age <= 0) return ("Enter a date in the past");
   return (paste0("You're ", age, " day(s) old, ", name, "."))
 } 
 
-renderPrint(do.call(my.f, r.paramList()))
+renderPrint(do.call(f.age, r.paramList()))
+```
+
+### Vector Input
+
+#### Create vector by using expressions like:
+* 1:4
+* seq(1,20,2) 
+* c(1,5,9)
+* 2^(-4:4)
+
+```{r}
+ui.vector("vec1")
+r.vec1 <- callModule(s.vector, "vec1")
+renderPrint(r.vec1())
 ```
 

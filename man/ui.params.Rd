@@ -14,7 +14,8 @@ ui.params(id, ...)
 \item{...}{One argument for each parameter for which an interface is required.
 
 Use examples in https://github.com/rajkar86/shinypipe/blob/master/vignettes/params.Rmd
-as a quickstart guide.
+as a quickstart guide. See https://github.com/rajkar86/shinypipe/blob/master/vignettes/basic.Rmd
+for a practical example.
 
 Each argument must be named.
 The widget value will be returned under this name by s.params.

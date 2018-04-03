@@ -3,18 +3,21 @@
 
 #' shinypipe UI for for getting user input for vectors
 #' @param id namespace id (string)
+#' @param type One of "numeric", "character" or "logical"
 #' @param label label for the expression to be evaluated as a vector
 #' @param value initial value for the expression to be evaluated as a vector
 #' @export
-ui.vector <- function(id, label = "Expression:", value = "") {
+ui.vector <- function(id, type = "numeric", label = "Expression", value = "") {
 
   ns <- NS(id)
 
-  ##TODO support other input methods
-  # column(4,selectizeInput(ns("type"), NULL, choices = c("Expr" = "Expression") )),
-  l <- list(
-    textInput(ns("expr"), label, width = "100%", value),
-    actionButton(ns("submit"), "Submit", width = "100")
+  w <- textInput(ns("expr"), paste0(label, " (", type,")") , width = "100%", value)
+  if(type=="logical")
+    w <- checkboxGroupInput(ns("expr"), paste0(label, " (", type,")"), choices= c(T,F), inline = T)
+
+  l <- fixedRow(
+    column(3,w),
+    column(9,tableOutput(ns("textOut")))
   )
 
   tagList(l)
@@ -29,7 +32,13 @@ ui.vector <- function(id, label = "Expression:", value = "") {
 s.vector <- function(input, output, session) {
 
   reactive({
-    input$submit
-    as.vector(eval(parse(text=isolate(input$expr))))
+    res <- toString(input$expr)
+    if (res == "TRUE, FALSE")
+      res <- c(T,F)
+    else
+      res <- as.vector(eval(parse(text=(input$expr))))
+
+    output$textOut <- renderTable(data.table(Values=toString(res)), colnames = F)
+    res
   })
 }

@@ -85,9 +85,11 @@ r.form <- callModule(s.formula, "form")
 renderPrint(r.form())
 ```
 
-### Plot widget
+### Plot module
 
 Sample usage of simple formula.
+Plot module provides zoom/selection behavior and click location display over ggplots.
+
 
 ```{r}
 
@@ -217,5 +219,29 @@ renderPrint(do.call(f.age, r.paramList()))
 ui.vector("vec1")
 r.vec1 <- callModule(s.vector, "vec1")
 renderPrint(r.vec1())
+```
+
+#### Logical vector
+
+```{r}
+ui.vector("vec2", "logical")
+r.vec2 <- callModule(s.vector, "vec2")
+renderPrint(r.vec2())
+```
+
+### Caret Model
+
+```{r}
+library(caret)
+radioButtons("caretModel", "Select model", choices = c("svmRadial", "lm"))
+```
+
+```{r}
+svm.params <- reactive(getModelInfo(input$caretModel)$svmRadial$parameters)
+
+renderUI(ui.caretModel("model1", svm.params()))
+r.model1Params <- callModule(s.caretModel, "model1")
+
+renderPrint(r.model1Params())
 ```
 

@@ -1,10 +1,11 @@
 ---
-title: "Interactive regression and classification using caret"
+title: "Interactive regression and classification"
 author: "Karthik Rajendran"
 output: 
   flexdashboard::flex_dashboard:
     source_code: embed
-    orientation: rows
+    vertical_layout: scroll
+    horizontal_layout: scroll
 runtime: shiny
 ---
 
@@ -13,6 +14,8 @@ rm(list = ls())
 library(datasets)
 library(data.table)
 library(ggplot2)
+library(DT)
+library(caret)
 
 runWithoutInstall <- F
 ifelse(runWithoutInstall,
@@ -20,7 +23,10 @@ ifelse(runWithoutInstall,
        library(shinypipe))
 
 data(mtcars)
+mtcars$cyl <- as.factor(mtcars$cyl)
+mtcars$vs <- as.factor(mtcars$vs)
 rv <- reactiveValues(table=as.data.table(mtcars))
+
 
 r.data <- reactive(as.data.table(rv$table))
 
@@ -35,7 +41,6 @@ r.dataF <- callModule(s.fread, "file", list(sep=",", header=T))
 observe(rv$table <- r.dataF())
 
 hr()
-
 renderUI({
   colsY <- list(choices = names(r.data()))
   colsX <- list(choices = names(r.data()), selected = names(r.data())[-1])
@@ -44,40 +49,34 @@ renderUI({
 r.form <- callModule(s.formula, "form")
 
 hr()
-
-library(caret)
 selectizeInput("model", "Model", names(getModelInfo()), selected = "svmRadial")
 
 hr()
-
 model.params <- reactive(getModelInfo(input$model)[[input$model]]$parameter)
 
 renderUI(ui.caretModel("model", model.params))
 r.model1Params <- callModule(s.caretModel, "model", reactive(model.params()$parameter))
 
 hr()
+actionButton("run", "Train", width = "200px")
 
+hr()
 ```
 
 
 ```{r Reactives}
 r.modelInfo <- reactive(getModelInfo(input$model, F)[[input$model]])
-
 ```
 
 Data
 =====
-Row
----
 ### Data used
 ```{r}
 renderDataTable(r.data())
 ```
 
-Row
-----
 ### Notes
-* Select the formula on the sidebar by choosing the explantory variables (X)
+* Select the formula on the sidebar by choosing the explanatory variables (X). cyl and vs are factor variables that can be used in classification
 
 * Select the model (Note that not all models may actually train when you click "Run" in the hosted version as not all libraries may be installed. If the document is run locally, packages can be installed as necessary. For this demo, choose functions like lm, svm\* and rvm\*.)
 
@@ -86,43 +85,54 @@ Row
 * Click on tabs on the top of the page to navigate to see the tuning grid created as you change the parameters, and 
 control caret::train parameters. Hit run once you have the tuning grid you want.
 
-### Model Info
+Model
+=======
+### Selected Model Info
 ```{r}
-renderPrint(cat(paste0(
-  "Label: ", paste(r.modelInfo()$label, collapse=", "), "\n\n",
-  "Type: ", paste(r.modelInfo()$type, collapse=", "), "\n\n",
-  "Needs libraries: ", paste(r.modelInfo()$library, collapse=", "), "\n\n",
-  "Tags: ", paste(r.modelInfo()$tags, collapse=", "), "\n\n"
-)))
+getInfoTableFromObj <- function (model, info){
+  data.table(Name=model,
+             Description=paste(info$label, collapse=", "),
+             Type=paste(info$type, collapse=", "),
+             Library.Dependencies=paste(info$library, collapse=", "),
+             Tags=paste(info$tags, collapse=", "))
+}
+
+renderTable(getInfoTableFromObj(input$model, r.modelInfo()))
+```
+
+### Model Browser (this info has been cached and could be out-of-date)
+```{r}
+# r.modelBrowser <- reactive({
+#   m <- names(getModelInfo())
+#   dt <- rbindlist(lapply(1:length(m), function(i) { getInfoTableFromObj(m[i], getModelInfo(m[i], F)[[m[i]]])}))
+# })
+load("caret_modelBrowser.RData")
+renderDataTable(datatable(t.modelBrowser, filter = "top"))
 ```
 
 Train
 =========
-
-Row
-----
 ### TuneGrid
 ```{r}
 r.tuneGrid <- reactive(expand.grid(r.model1Params()))
-renderTable(r.tuneGrid())
+renderDataTable(r.tuneGrid())
 ```
 
-### Train (See help section for caret::train)
+### List to override train parameters (See help section for caret::train) {data-height="130px"}
 ```{r}
-textAreaInput("trainList", "List to override train parameters", rows=4, width = "100%", 
+textAreaInput("trainList", NULL, width = '700px', height = "100px",
               value = "list()")
+```
+
+### List to override default train control (See help section for caret::trainControl) {data-height="130px"}
+```{r}
+textAreaInput("trainControlList", NULL, width = '700px', height = "100px", 
+              value = "list(method = 'cv', number = 3)")
 
 r.trainParams <- reactive({
   input$run
-  eval(parse(text = isolate(input$trainControlList)))
+  as.list(eval(parse(text = isolate(input$trainList))))
 })
-
-hr()
-textAreaInput("trainControlList", "List to override train control", rows=4, width = "100%", 
-              value = "list(method = 'cv', number = 3)")
-
-hr()
-actionButton("run", "Run")
 
 r.trainControl <- reactive({
   input$run
@@ -130,10 +140,7 @@ r.trainControl <- reactive({
 })
 ```
 
-
-Row
----
-### Note: train may not work for all models in this demo hosted version. Download locally and install necessary package to run these models.
+### Note: train may not work for all models in the hosted instance. Download locally and install necessary package to run these models.
 ```{r}
 r.train <- reactive({
   input$run
@@ -154,3 +161,34 @@ r.train <- reactive({
 renderPrint(r.train())
 ```
 
+Results
+========
+### Plot 
+```{r}
+fillRow(actionButton("renderPlotBtn", "Update"),
+        textInput("renderPlotCmd", NULL, "plot(r.train())", width = "100%"),
+        flex= c(NA,1), height ="50px")
+```
+
+### 
+```{r}
+renderPlot({
+  input$renderPlotBtn
+  eval(parse(text = isolate(input$renderPlotCmd)))
+})
+```
+
+### Print 
+```{r}
+fillRow(actionButton("renderPrintBtn", "Update"),
+        textInput("renderPrintCmd", NULL, "r.train()$finalModel", width = "100%"),
+        flex= c(NA,1), height ="50px")
+```
+
+### 
+```{r}
+renderPrint({
+  input$renderPrintBtn
+  eval(parse(text = isolate(input$renderPrintCmd)))
+})
+```

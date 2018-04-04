@@ -221,7 +221,7 @@ renderPrint(r.vec2())
 ### Caret Models
 
 This module makes it easier to create an interface for any of regression or classification models
-supported by the R caret package.  svmRadial is used as an example here. But the module can be used with any caret supported model by passing the corresponding parameter table provided by caret::getModelInfo. See the caret vignette to explore different models.
+supported by the R caret package.  svmRadial is used as an example here. But the module can be used with any caret supported model by passing the corresponding parameter table provided by caret::getModelInfo. See the caret vignette to see an example to explore the 250+ different models supported by the caret package.
 
 #### svmRadial 
 

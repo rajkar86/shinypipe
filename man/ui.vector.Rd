@@ -4,10 +4,15 @@
 \alias{ui.vector}
 \title{shinypipe UI for for getting user input for vectors}
 \usage{
-ui.vector(id, label = "Expression:", value = "")
+ui.vector(id, type = "numeric", label = "Expression", value = "",
+  showValues = T)
 }
 \arguments{
 \item{id}{namespace id (string)}
+
+\item{type}{One of "numeric", "character" or "logical". For now,
+no validation is provided between character and numeric types and the user is just expected
+to enter the correct types}
 
 \item{label}{label for the expression to be evaluated as a vector}
 

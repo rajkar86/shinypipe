@@ -14,14 +14,13 @@ library(datasets)
 library(data.table)
 library(ggplot2)
 
-runWithoutInstall <- T
+runWithoutInstall <- F
 ifelse(runWithoutInstall,
        sapply(list.files(path = "../R/", pattern="*R", full.names = T), source),
        library(shinypipe))
 
 data(mtcars)
 rv <- reactiveValues(table=as.data.table(mtcars))
-rm(mtcars)
 
 r.data <- reactive(as.data.table(rv$table))
 
@@ -80,7 +79,7 @@ Row
 ### Notes
 * Select the formula on the sidebar by choosing the explantory variables (X)
 
-* Select the model (Note that not all models may be supported in the hosted version as not all libraries are installed. If the markdown is hosted locally, packages can be installed as necessary)
+* Select the model (Note that not all models may be supported in the hosted version as not all libraries are installed. If the document is run locally, packages can be installed as necessary)
 
 * Select the model parameters. Each parameter can either be a value or a range specified by any expression that evaluates to be a vector (like 1:4, c(1,2,5)).
 

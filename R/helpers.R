@@ -23,3 +23,8 @@ signedColorStyleInterval <- function(data, num.breaks = 20) {
 
   return(DT::styleInterval(brks, clrs))
 }
+
+cooksdOutlier <- function (dt, fml, thresh = 4, outlier.colname = "outlier") {
+  cooksd <- cooks.distance(lm(fml, dt))
+  dt[, eval(outlier.colname) := (cooksd > mean(cooksd) * thresh)]
+}

@@ -15,7 +15,7 @@ library(datasets)
 library(data.table)
 library(ggplot2)
 
-runWithoutInstall <- T
+runWithoutInstall <- F
 ifelse(runWithoutInstall,
        sapply(list.files(path = "../R/", pattern="*R", full.names = T), source),
        library(shinypipe))
@@ -25,12 +25,12 @@ rv <- reactiveValues(table=as.data.table(mtcars))
 rm(mtcars)
 ```
 
-Vignette to illustrate some elements of R Shiny modules packaged in https://github.com/rajkar86/shinypipe
-Click on show all code on the top right to show code.
+Vignette to illustrate elements of R Shiny modules packaged in https://github.com/rajkar86/shinypipe.
+Click on 'Show All Code' at the top right to display code.
 
 ### File upload 1
 
-*fread* wrapper to get a data.table from a data file
+*fread* wrapper to get a data.table from a data file.
 
 ```{r }
 ui.fread("file1")
@@ -38,13 +38,12 @@ r.data1 <- callModule(s.fread, "file1")
 renderTable(head(r.data1()))
 ```
 
-Note that the default selected values of *sep* and *header* can be overidden.
+Note that the values of *sep* and *header* selected by default can be overidden.
 
 ### File upload 2
 
-The ability to select separator can be taken away from the user (by setting sep = NULL).
-In this case, *sep* must be directly specified in the server function. 
-The same is true for the header argument as well.
+The ability to select the separator can be taken away from the user (by setting sep = NULL).
+In this case, *sep* must be directly specified in the server function. The same is true for the header argument.
 
 ```{r }
 ui.fread("file2", sep = NULL)
@@ -54,8 +53,7 @@ renderTable(head(r.data2()))
 
 #### Table used in the rest of the vignette
 
-The sample *cars* table is used for illustration, unless a file was uploaded in one of the widgets above, 
-in which case the table from the latest uploaded file will be used.
+The sample *cars* table from the *datasets* package is used for illustration, unless a file was uploaded in one of the widgets above, in which case the table from the latest uploaded file will be used. A few rows from the table are shown below:
 
 ```{r}
 r.data <- reactive(as.data.table(rv$table))
@@ -64,11 +62,9 @@ observe(rv$table <- r.data2())
 renderTable(head(r.data()))
 ```
 
-### Simple Formula editor
+### Simple Formula Editor
 
-Formulas can be dynamically constructed, for instance, using column names of the tables. 
-The user can be restricted to selecting only one explanatory variable by setting the parameter simpleFormula to TRUE.
-This can be useful for plots.
+Formulas can be dynamically constructed, for instance, using column names of the tables. The user can be restricted to selecting only one explanatory variable by setting the parameter simpleFormula to TRUE. This can be useful for plots. The selected formula is printed below.
 
 ```{r}
 renderUI({
@@ -78,8 +74,6 @@ renderUI({
 })
 ```
 
-#### Output formula
-
 ```{r}
 r.form <- callModule(s.formula, "form")
 renderPrint(r.form())
@@ -87,9 +81,7 @@ renderPrint(r.form())
 
 ### Plot module
 
-Sample usage of simple formula.
-Plot module provides zoom/selection behavior and click location display over ggplots.
-
+Sample usage of simple formula, and an illustration of plot module, which can be used to provide zoom/selection behavior and click location display on top of any ggplot within a shiny document.
 
 ```{r}
 
@@ -104,8 +96,7 @@ r.brushedData <- callModule(s.plot, "plot", r.plot, r.data, selected.colname = "
 
 #### Selected Data
 
-Show head of the selected data from the above plot. Click and drag in the plot to select data.
-Note that if selected.colname is not specified, the data returned will only be the selected data, and there's no need to filter subsequently.
+Click and drag in the plot to select data. The table below shows the first few rows from the table of data selected from the above plot. Note that in this example the selected column name is "selected". However, if selected.colname is not specified in ui.plot, the data returned will only be the selected data, and there's no need to filter subsequently based on the selected.colname. 
 
 ```{r}
 renderDataTable(head(r.brushedData()[selected==T]))
@@ -114,7 +105,7 @@ renderDataTable(head(r.brushedData()[selected==T]))
 
 ### Formula editor: example 1
 
-The default formula interface allows selecting multiple explanatory variables. And the user can be given control over whether to use intercept by just setting a default selection for the intercept argument.
+The default behavior of the formula interface is to allow selecting multiple explanatory variables. And the user can be given control over whether to use intercept by setting a default selection for the intercept argument.
 
 ```{r}
 renderUI({
@@ -133,7 +124,7 @@ renderPrint(r.fml())
 ```
 
 The choice of whether to include intercept or not can be hidden from the user by leaving 
-the intercept to its default value of NULL as shown in the "Simple formula editor" example.
+the intercept to its default value of NULL similar to the "Simple Formula Editor" example.
 
 ### Linear regression (Full table)
 
@@ -145,8 +136,7 @@ renderPrint(summary(lm(r.fml(), r.data())))
 
 ### Linear regression (Selected)
 
-Using the formula only on the selected dataset. Select a portion of the dataset from the plot above to run linear regression
-only on the selected portion of the dataset.
+Using the formula only on the selected dataset, which is returned as an output of the plot module. Select a portion of the dataset from the plot above to run linear regression only on the selected portion of the dataset.
 
 ```{r}
 renderPrint({
@@ -159,11 +149,11 @@ renderPrint({
 
 ### Using params: SVM example
 
-Encapsulate UI interface for function parameters without worrying about the widgets to use. Widgets are automatically selected based on type inference; in most cases, users only need to specify a default value and (optionally) a range of allowed values.
+Encapsulate UI interface for function parameters without worrying about the widgets to use. Widgets are automatically selected based on type inference; in most cases, users only need to specify a default value and (optionally) a range of allowed values. 
 
-The selected parameter values are returned in a list, that can be directly used to call a function through *do.call*. This is a convenient way to group parameters applicable to a specific function.
+The selected parameter values are returned in a list, that can be directly used to call a function through *do.call*. This is a convenient way to group parameters applicable to a specific function into a list.
 
-E.g. Run SVM. Note: not all parameters are applicable for all kernels.
+Sample use case: Running SVM. Note: not all parameters are applicable for all kernels.
 
 ```{r}
 library(e1071)
@@ -209,7 +199,7 @@ renderPrint(do.call(f.age, r.paramList()))
 
 ### Vector Input
 
-#### Create vector by using expressions like:
+#### Create vectors by using expressions like:
 * 1:4
 * seq(1,20,2) 
 * c(1,5,9)
@@ -222,7 +212,6 @@ renderPrint(r.vec1())
 ```
 
 #### Logical vector
-
 ```{r}
 ui.vector("vec2", "logical")
 r.vec2 <- callModule(s.vector, "vec2")
@@ -231,8 +220,8 @@ renderPrint(r.vec2())
 
 ### Caret Models
 
-This module makes it easier to create an interface to create for any of regression or classification models
-supported by the R caret package.  svmRadial is used as an example here. But the 
+This module makes it easier to create an interface for any of regression or classification models
+supported by the R caret package.  svmRadial is used as an example here. But the module can be used with any caret supported model by passing the corresponding parameter table provided by caret::getModelInfo. See the caret vignette to explore different models.
 
 #### svmRadial 
 

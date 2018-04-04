@@ -79,11 +79,12 @@ Row
 ### Notes
 * Select the formula on the sidebar by choosing the explantory variables (X)
 
-* Select the model (Note that not all models may be supported in the hosted version as not all libraries are installed. If the document is run locally, packages can be installed as necessary)
+* Select the model (Note that not all models may actually train when you click "Run" in the hosted version as not all libraries may be installed. If the document is run locally, packages can be installed as necessary. For this demo, choose functions like lm, svm\* and rvm\*.)
 
-* Select the model parameters. Each parameter can either be a value or a range specified by any expression that evaluates to be a vector (like 1:4, c(1,2,5)).
+* Select the model parameters. Each parameter can either be a value or a range specified by any expression that evaluates to be a vector (like 1:4, c(1,2,5)). Or you can leave it as such to use a default training grid first to get an idea of suitable ranges.
 
-* Click on tabs on the top of the page to navigate to train the model
+* Click on tabs on the top of the page to navigate to see the tuning grid created as you change the parameters, and 
+control caret::train parameters. Hit run once you have the tuning grid you want.
 
 ### Model Info
 ```{r}
@@ -132,7 +133,7 @@ r.trainControl <- reactive({
 
 Row
 ---
-###
+### Note: train may not work for all models in this demo hosted version. Download locally and install necessary package to run these models.
 ```{r}
 r.train <- reactive({
   input$run

@@ -229,19 +229,47 @@ r.vec2 <- callModule(s.vector, "vec2")
 renderPrint(r.vec2())
 ```
 
-### Caret Model
+### Caret Models
+
+This module makes it easier to create an interface to create for any of regression or classification models
+supported by the R caret package.  svmRadial is used as an example here. But the 
+
+#### svmRadial 
+
+Using svm with radial kernel as an example to illustrate.
+
+For e.g., entering "1:2" for sigma and "2^(-1:1)" for Cost will create a tuneGrid of 10 possible combinations that can be used with caret::train.  
 
 ```{r}
 library(caret)
-radioButtons("caretModel", "Select model", choices = c("svmRadial", "lm"))
-```
+library(kernlab)
 
-```{r}
-svm.params <- reactive(getModelInfo(input$caretModel)$svmRadial$parameters)
+model.params <- reactive(getModelInfo("svmRadial")[["svmRadial"]]$parameter)
 
-renderUI(ui.caretModel("model1", svm.params()))
-r.model1Params <- callModule(s.caretModel, "model1")
+renderUI(ui.caretModel("model1", model.params))
+r.model1Params <- callModule(s.caretModel, "model1", reactive(model.params()$parameter))
 
 renderPrint(r.model1Params())
 ```
 
+Using *expand.grid* on the output to get the tune grid for training using caret.
+
+```{r}
+r.tuneGrid <- reactive(expand.grid(r.model1Params()))
+renderPrint(r.tuneGrid())
+```
+
+Running train using the tuneGrid created above by clicking "Run".
+
+```{r}
+actionButton("run", "Run")
+r.train <- reactive({
+  input$run
+  grid <- isolate(r.tuneGrid())
+  if (is.null(grid) || nrow(grid) == 0)
+    return (NULL)
+  train(r.fml(), r.data(), method = "svmRadial", tuneGrid = grid)
+})
+
+renderPrint(r.train())
+```

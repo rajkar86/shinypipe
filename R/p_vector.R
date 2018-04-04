@@ -3,22 +3,23 @@
 
 #' shinypipe UI for for getting user input for vectors
 #' @param id namespace id (string)
-#' @param type One of "numeric", "character" or "logical"
+#' @param type One of "numeric", "character" or "logical". For now,
+#' no validation is provided between character and numeric types and the user is just expected
+#' to enter the correct types
 #' @param label label for the expression to be evaluated as a vector
 #' @param value initial value for the expression to be evaluated as a vector
 #' @export
-ui.vector <- function(id, type = "numeric", label = "Expression", value = "") {
+ui.vector <- function(id, type = "numeric", label = "Expression", value = "",
+                      showValues = T) {
 
   ns <- NS(id)
 
-  w <- textInput(ns("expr"), paste0(label, " (", type,")") , width = "100%", value)
+  l <- textInput(ns("expr"), paste0(label, " (", type,")") , width = "100%", value)
   if(type=="logical")
-    w <- checkboxGroupInput(ns("expr"), paste0(label, " (", type,")"), choices= c(T,F), inline = T)
+    l <- checkboxGroupInput(ns("expr"), paste0(label, " (", type,")"), choices= c(T,F), inline = T)
 
-  l <- fixedRow(
-    column(3,w),
-    column(9,tableOutput(ns("textOut")))
-  )
+  if (showValues)
+    l <- fixedRow(column(4,l), column(8,tableOutput(ns("textOut"))))
 
   tagList(l)
 }

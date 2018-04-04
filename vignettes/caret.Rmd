@@ -1,0 +1,156 @@
+---
+title: "Interactive regression and classification using caret"
+author: "Karthik Rajendran"
+output: 
+  flexdashboard::flex_dashboard:
+    source_code: embed
+    orientation: rows
+runtime: shiny
+---
+
+```{r Library, include=F}
+rm(list = ls())
+library(datasets)
+library(data.table)
+library(ggplot2)
+
+runWithoutInstall <- T
+ifelse(runWithoutInstall,
+       sapply(list.files(path = "../R/", pattern="*R", full.names = T), source),
+       library(shinypipe))
+
+data(mtcars)
+rv <- reactiveValues(table=as.data.table(mtcars))
+rm(mtcars)
+
+r.data <- reactive(as.data.table(rv$table))
+
+```
+
+Sidebar {.sidebar}
+====================
+
+```{r}
+ui.fread("file", list(label="Alternative dataset (optional)"), sep = NULL, header=NULL)
+r.dataF <- callModule(s.fread, "file", list(sep=",", header=T))
+observe(rv$table <- r.dataF())
+
+hr()
+
+renderUI({
+  colsY <- list(choices = names(r.data()))
+  colsX <- list(choices = names(r.data()), selected = names(r.data())[-1])
+  ui.formula("form", colsY, colsX)
+})
+r.form <- callModule(s.formula, "form")
+
+hr()
+
+library(caret)
+selectizeInput("model", "Model", names(getModelInfo()), selected = "svmRadial")
+
+hr()
+
+model.params <- reactive(getModelInfo(input$model)[[input$model]]$parameter)
+
+renderUI(ui.caretModel("model", model.params))
+r.model1Params <- callModule(s.caretModel, "model", reactive(model.params()$parameter))
+
+hr()
+
+```
+
+
+```{r Reactives}
+r.modelInfo <- reactive(getModelInfo(input$model, F)[[input$model]])
+
+```
+
+Data
+=====
+Row
+---
+### Data used
+```{r}
+renderDataTable(r.data())
+```
+
+Row
+----
+### Notes
+* Select the formula on the sidebar by choosing the explantory variables (X)
+
+* Select the model (Note that not all models may be supported in the hosted version as not all libraries are installed. If the markdown is hosted locally, packages can be installed as necessary)
+
+* Select the model parameters. Each parameter can either be a value or a range specified by any expression that evaluates to be a vector (like 1:4, c(1,2,5)).
+
+* Click on tabs on the top of the page to navigate to train the model
+
+### Model Info
+```{r}
+renderPrint(cat(paste0(
+  "Label: ", paste(r.modelInfo()$label, collapse=", "), "\n\n",
+  "Type: ", paste(r.modelInfo()$type, collapse=", "), "\n\n",
+  "Needs libraries: ", paste(r.modelInfo()$library, collapse=", "), "\n\n",
+  "Tags: ", paste(r.modelInfo()$tags, collapse=", "), "\n\n"
+)))
+```
+
+Train
+=========
+
+Row
+----
+### TuneGrid
+```{r}
+r.tuneGrid <- reactive(expand.grid(r.model1Params()))
+renderTable(r.tuneGrid())
+```
+
+### Train (See help section for caret::train)
+```{r}
+textAreaInput("trainList", "List to override train parameters", rows=4, width = "100%", 
+              value = "list()")
+
+r.trainParams <- reactive({
+  input$run
+  eval(parse(text = isolate(input$trainControlList)))
+})
+
+hr()
+textAreaInput("trainControlList", "List to override train control", rows=4, width = "100%", 
+              value = "list(method = 'cv', number = 3)")
+
+hr()
+actionButton("run", "Run")
+
+r.trainControl <- reactive({
+  input$run
+  do.call(trainControl, eval(parse(text = isolate(input$trainControlList))))
+})
+```
+
+
+Row
+---
+###
+```{r}
+r.train <- reactive({
+  input$run
+  params <- isolate(r.trainParams()) 
+  
+  params$form <- r.form()
+  params$data <- isolate(r.data())
+  params$method <- isolate(input$model)
+  params$trControl <- isolate(r.trainControl())
+
+  grid <- isolate(r.tuneGrid())
+  if (!is.null(grid) && nrow(grid) > 0)
+    params$tuneGrid <- grid
+
+  do.call(caret:::train.formula, params)
+})
+
+renderPrint(r.train())
+```
+

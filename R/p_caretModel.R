@@ -14,7 +14,7 @@ ui.caretModel <- function(id, table.params) {
 
   l <- lapply(1:nrow(table.params()), function (i) {
     rw <- table.params()[i,]
-    ui.vector(ns(rw$parameter), rw$class, rw$label)
+    ui.vector(ns(rw$parameter), rw$class, rw$label, showValues = F)
   })
 
   tagList(l)

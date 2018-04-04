@@ -51,16 +51,24 @@ r.form <- callModule(s.formula, "form")
 hr()
 selectizeInput("model", "Model", names(getModelInfo()), selected = "svmRadial")
 
+actionButton("run", "Train", width = "200px")
+
 hr()
+h4("Parameters") 
+actionLink("help", "Click here for help")
+hr()
+
+observeEvent(input$help, showModal(modalDialog(
+  "If left blank, a default training grid will be used, which can be used to later get an idea of suitable ranges. Otherwise, each parameter can either be a value or a range specified by any expression that evaluates to be a vector (like 1:4, c(1,2,5), seq(1,40,3) in case of a numeric field).  The tuning grid is shown in the Train tab. Make sure it's correct before you click on Train.",
+  title = "Help", easyClose = T)))
+
 model.params <- reactive(getModelInfo(input$model)[[input$model]]$parameter)
 
 renderUI(ui.caretModel("model", model.params))
 r.model1Params <- callModule(s.caretModel, "model", reactive(model.params()$parameter))
 
 hr()
-actionButton("run", "Train", width = "200px")
 
-hr()
 ```
 
 
@@ -76,11 +84,9 @@ renderDataTable(r.data())
 ```
 
 ### Notes
-* Select the formula on the sidebar by choosing the explanatory variables (X). cyl and vs are factor variables that can be used in classification
+* In the default cars dataset, cyl and vs columns are factor variables that can be used with classification algorithms.
 
-* Select the model (Note that not all models may actually train when you click "Run" in the hosted version as not all libraries may be installed. If the document is run locally, packages can be installed as necessary. For this demo, choose functions like lm, svm\* and rvm\*.)
-
-* Select the model parameters. Each parameter can either be a value or a range specified by any expression that evaluates to be a vector (like 1:4, c(1,2,5)). Or you can leave it as such to use a default training grid first to get an idea of suitable ranges.
+* Note that not all models may actually train when you click "Run" in the hosted version as not all libraries may be installed. If the document is run locally, packages can be installed as necessary. For the demo, choose functions like lm, svm\* and rvm\*.)
 
 * Click on tabs on the top of the page to navigate to see the tuning grid created as you change the parameters, and 
 control caret::train parameters. Hit run once you have the tuning grid you want.
@@ -118,13 +124,13 @@ r.tuneGrid <- reactive(expand.grid(r.model1Params()))
 renderDataTable(r.tuneGrid())
 ```
 
-### List to override train parameters (See help section for caret::train) {data-height="130px"}
+### List to override train parameters (See ?caret::train) {data-height="130px"}
 ```{r}
 textAreaInput("trainList", NULL, width = '700px', height = "100px",
               value = "list()")
 ```
 
-### List to override default train control (See help section for caret::trainControl) {data-height="130px"}
+### List to override default train control (See ?caret::trainControl) {data-height="130px"}
 ```{r}
 textAreaInput("trainControlList", NULL, width = '700px', height = "100px", 
               value = "list(method = 'cv', number = 3)")

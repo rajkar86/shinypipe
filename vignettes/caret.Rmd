@@ -18,6 +18,9 @@ library(DT)
 library(caret)
 library(flexdashboard)
 
+library(e1071)
+library(kernlab)
+library(earth)
 
 runWithoutInstall <- F
 ifelse(runWithoutInstall,
@@ -94,7 +97,7 @@ renderDataTable(r.data())
 ### Notes
 * In the default cars dataset, cyl and vs columns are factor variables that can be used with classification algorithms.
 
-* Note that not all models may actually train when you click "Run" in the hosted version as not all libraries may be installed. If the document is run locally, packages can be installed as necessary. For the demo, choose functions like lm, svm\* and rvm\*.)
+* Note that not all models may actually train when you click "Run" in the hosted version as not all libraries may be installed. If the document is run locally, packages can be installed as necessary. For the demo, choose functions from e1071, kernlab and earth packages.)
 
 * Click on tabs on the top of the page to navigate to see the tuning grid created as you change the parameters, and 
 control caret::train parameters. Hit run once you have the tuning grid you want.

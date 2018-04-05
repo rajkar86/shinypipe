@@ -16,6 +16,8 @@ library(data.table)
 library(ggplot2)
 library(DT)
 library(caret)
+library(flexdashboard)
+
 
 runWithoutInstall <- F
 ifelse(runWithoutInstall,
@@ -25,10 +27,11 @@ ifelse(runWithoutInstall,
 data(mtcars)
 mtcars$cyl <- as.factor(mtcars$cyl)
 mtcars$vs <- as.factor(mtcars$vs)
-rv <- reactiveValues(table=as.data.table(mtcars))
+rv <- reactiveValues(table=as.data.table(mtcars), testIndices=NULL)
 
 
-r.data <- reactive(as.data.table(rv$table))
+r.data <- reactive(rv$table[rv$testIndices])
+r.data.test <- reactive(rv$table[!rv$testIndices])
 
 ```
 
@@ -41,12 +44,17 @@ r.dataF <- callModule(s.fread, "file", list(sep=",", header=T))
 observe(rv$table <- r.dataF())
 
 hr()
+sliderInput("testPct", "% of test data", 5, 50, 25)
+observeEvent(input$testPct, rv$testIndices <- createDataPartition(1:rv$table[,.N], p=(input$testPct/100), list=F))
+
+hr()
 renderUI({
   colsY <- list(choices = names(r.data()))
   colsX <- list(choices = names(r.data()), selected = names(r.data())[-1])
   ui.formula("form", colsY, colsX)
 })
 r.form <- callModule(s.formula, "form")
+r.form.y <- callModule(s.formula.y, "form")
 
 hr()
 selectizeInput("model", "Model", names(getModelInfo()), selected = "svmRadial")
@@ -197,4 +205,53 @@ renderPrint({
   input$renderPrintBtn
   eval(parse(text = isolate(input$renderPrintCmd)))
 })
+```
+
+Test
+========
+
+Column
+-------
+
+### 
+```{r}
+r.pred <- reactive({
+  obs <- r.data.test()[, get(r.form.y())]
+  pred <- predict(r.train(), r.data.test())
+  data.table(obs = obs, pred = pred)
+})
+
+renderDataTable(r.pred())
+```
+
+Column
+-------
+```{r}
+r.summary <- reactive(defaultSummary(r.pred()))
+metric <- function(m, s) ifelse(m %in% names(s), formatC(s[[m]], digits = 4), "-")
+```
+
+### RMSE
+```{r}
+renderValueBox(metric("RMSE", r.summary()))
+```
+
+### Rsquared
+```{r}
+renderValueBox(metric("Rsquared", r.summary()))
+```
+
+### MAE
+```{r}
+renderValueBox(metric("MAE", r.summary()))
+```
+
+### Accuracy
+```{r}
+renderValueBox(metric("Accuracy", r.summary()))
+```
+
+### Kappa 
+```{r} 
+renderValueBox(metric("Kappa", r.summary()))
 ```

@@ -60,7 +60,7 @@ s.formula.y <- function(input, output, session) {
 s.formula.x <- function(input, output, session) {
   return(reactive({
     validate(need(input$x, message = F))
-    input$x
+    setdiff(input$x, input$y)
   }))
 }
 
@@ -76,7 +76,7 @@ s.formula <- function(input, output, session, intercept = T) {
       need(input$x, message = F),
       need(input$y, message = F)
     )
-    fml <- paste(input$y, "~", paste(input$x, collapse = "+"))
+    fml <- paste(input$y, "~", paste(setdiff(input$x, input$y), collapse = "+"))
 
     intercept <- ifelse(is.null(input$intercept), intercept, input$intercept)
     if (!intercept) { fml <- paste(fml, "+ 0") }

@@ -15,7 +15,7 @@ library(datasets)
 library(data.table)
 library(ggplot2)
 
-runWithoutInstall <- F
+runWithoutInstall <- T
 ifelse(runWithoutInstall,
        sapply(list.files(path = "../R/", pattern="*R", full.names = T), source),
        library(shinypipe))
@@ -233,18 +233,16 @@ For e.g., entering "1:2" for sigma and "2^(-1:1)" for Cost will create a tuneGri
 library(caret)
 library(kernlab)
 
-model.params <- reactive(getModelInfo("svmRadial")[["svmRadial"]]$parameter)
-
-renderUI(ui.caretModel("model1", model.params))
-r.model1Params <- callModule(s.caretModel, "model1", reactive(model.params()$parameter))
+renderUI(ui.caretModel("model1", reactive(c("svmRadial"))))
+r.model1Params <- callModule(s.caretModel, "model1")
 
 renderPrint(r.model1Params())
 ```
 
-Using *expand.grid* on the output to get the tune grid for training using caret.
+Using *expand.grid* on the params part of the output to get the tune grid for training using caret.
 
 ```{r}
-r.tuneGrid <- reactive(expand.grid(r.model1Params()))
+r.tuneGrid <- reactive(expand.grid(r.model1Params()$params))
 renderPrint(r.tuneGrid())
 ```
 

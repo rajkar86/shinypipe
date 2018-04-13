@@ -4,18 +4,19 @@
 #' shinypipe UI for creating a data frame that can potentially be used
 #' as a tuning grid for caret::train
 #' @param id namespace id (string)
-#' @param table.params reactive data frame of parameters with three columns:
-#' parameter, class and label similar to that provided by the parameter item in the
-#' object returned by caret::getModelInfo
+#' @param models reactive list of models
+#' @param selected model to be selected by default
 #' @export
-ui.caretModel <- function(id, table.params) {
-
+ui.caretModel <- function(id, models, selected = NULL) {
   ns <- NS(id)
 
-  l <- lapply(1:nrow(table.params()), function (i) {
-    rw <- table.params()[i,]
-    ui.vector(ns(rw$parameter), rw$class, rw$label, showValues = F)
-  })
+  require(caret)
+
+  l <- list(
+    selectizeInput(ns("model"), "Model", models(), selected),
+    uiOutput(ns("typeOut")),
+    uiOutput(ns("paramsOut"))
+  )
 
   tagList(l)
 }
@@ -25,13 +26,25 @@ ui.caretModel <- function(id, table.params) {
 #' @param input shiny input
 #' @param output shiny output
 #' @param session shiny session
-#' @param parameters reactive vector of parameters (usually the parameter column sent to table.params in ui.caretModel)
-#' @return a data frame that can potentially be used as a tuning grid for caret::train
 #' @export
-s.caretModel <- function(input, output, session, parameters) {
-  reactive({
-    r <- lapply(parameters(), function(p) callModule(s.vector, p)())
-    names(r) <- parameters()
-    r
+s.caretModel <- function(input, output, session) {
+
+  model.params <- reactive({
+    req(input$model)
+    getModelInfo(input$model, regex = F)[[input$model]]$parameter
   })
+
+  model.type <- reactive({
+    req(input$model)
+    getModelInfo(input$model, regex = F)[[input$model]]$type
+  })
+
+  output$typeOut <- renderUI(shiny::radioButtons(session$ns("type"), NULL, model.type()))
+  output$paramsOut <- renderUI(ui.listOfVectors(session$ns("params"), model.params))
+
+  return(reactive(list(
+    model = input$model,
+    type = input$type,
+    params = callModule(s.listOfVectors, "params", reactive(model.params()$parameter))()
+  )))
 }

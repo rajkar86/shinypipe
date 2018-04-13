@@ -22,7 +22,7 @@ library(e1071)
 library(kernlab)
 library(earth)
 
-runWithoutInstall <- F
+runWithoutInstall <- T
 ifelse(runWithoutInstall,
        sapply(list.files(path = "../R/", pattern="*R", full.names = T), source),
        library(shinypipe))
@@ -59,24 +59,20 @@ renderUI({
 r.form <- callModule(s.formula, "form")
 r.form.y <- callModule(s.formula.y, "form")
 
-hr()
-selectizeInput("model", "Model", names(getModelInfo()), selected = "svmRadial")
-
 actionButton("run", "Train", width = "200px")
 
 hr()
 h4("Parameters") 
 actionLink("help", "Click here for help")
-hr()
 
 observeEvent(input$help, showModal(modalDialog(
   "If left blank, a default training grid will be used, which can be used to later get an idea of suitable ranges. Otherwise, each parameter can either be a value or a range specified by any expression that evaluates to be a vector (like 1:4, c(1,2,5), seq(1,40,3) in case of a numeric field).  The tuning grid is shown in the Train tab. Make sure it's correct before you click on Train.",
   title = "Help", easyClose = T)))
 
-model.params <- reactive(getModelInfo(input$model)[[input$model]]$parameter)
+renderUI(ui.caretModel("m1", reactive(names(getModelInfo())), selected = "svmRadial"))
+r.caretModel <- callModule(s.caretModel, "m1")
 
-renderUI(ui.caretModel("model", model.params))
-r.model1Params <- callModule(s.caretModel, "model", reactive(model.params()$parameter))
+r.model <- reactive(r.caretModel()$model)
 
 hr()
 
@@ -84,7 +80,7 @@ hr()
 
 
 ```{r Reactives}
-r.modelInfo <- reactive(getModelInfo(input$model, F)[[input$model]])
+r.modelInfo <- reactive(getModelInfo(r.model(), F)[[r.model()]])
 ```
 
 Data
@@ -114,7 +110,7 @@ getInfoTableFromObj <- function (model, info){
              Tags=paste(info$tags, collapse=", "))
 }
 
-renderTable(getInfoTableFromObj(input$model, r.modelInfo()))
+renderTable(getInfoTableFromObj(r.model(), r.modelInfo()))
 ```
 
 ### Model Browser (this info has been cached and could be out-of-date)
@@ -131,7 +127,7 @@ Train
 =========
 ### TuneGrid
 ```{r}
-r.tuneGrid <- reactive(expand.grid(r.model1Params()))
+r.tuneGrid <- reactive(expand.grid(r.caretModel()$params))
 renderDataTable(r.tuneGrid())
 ```
 
@@ -165,7 +161,7 @@ r.train <- reactive({
   
   params$form <- r.form()
   params$data <- isolate(r.data())
-  params$method <- isolate(input$model)
+  params$method <- isolate(r.model())
   params$trControl <- isolate(r.trainControl())
 
   grid <- isolate(r.tuneGrid())

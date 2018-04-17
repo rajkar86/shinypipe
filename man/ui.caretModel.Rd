@@ -5,14 +5,14 @@
 \title{shinypipe UI for creating a data frame that can potentially be used
 as a tuning grid for caret::train}
 \usage{
-ui.caretModel(id, table.params)
+ui.caretModel(id, models, selected = NULL)
 }
 \arguments{
 \item{id}{namespace id (string)}
 
-\item{table.params}{reactive data frame of parameters with three columns:
-parameter, class and label similar to that provided by the parameter item in the
-object returned by caret::getModelInfo}
+\item{models}{reactive list of models}
+
+\item{selected}{model to be selected by default}
 }
 \description{
 shinypipe UI for creating a data frame that can potentially be used

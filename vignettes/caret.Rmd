@@ -147,7 +147,7 @@ r.train <- reactive({
   input$run
   params <- isolate(r.trainParams()) 
   
-  params$form <- r.form()
+  params$form <- isolate(r.form())
   params$data <- isolate(r.data())
   params$method <- isolate(r.model())
   params$trControl <- isolate(r.trainControl())

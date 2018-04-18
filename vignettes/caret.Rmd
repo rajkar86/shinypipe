@@ -102,25 +102,12 @@ Model
 =======
 ### Selected Model Info
 ```{r}
-getInfoTableFromObj <- function (model, info){
-  data.table(Name=model,
-             Description=paste(info$label, collapse=", "),
-             Type=paste(info$type, collapse=", "),
-             Library.Dependencies=paste(info$library, collapse=", "),
-             Tags=paste(info$tags, collapse=", "))
-}
-
-renderTable(getInfoTableFromObj(r.model(), r.modelInfo()))
+renderDataTable(caretModelInfoTable(F)[Name==r.model()])
 ```
 
 ### Model Browser (this info has been cached and could be out-of-date)
 ```{r}
-# r.modelBrowser <- reactive({
-#   m <- names(getModelInfo())
-#   dt <- rbindlist(lapply(1:length(m), function(i) { getInfoTableFromObj(m[i], getModelInfo(m[i], F)[[m[i]]])}))
-# })
-load("caret_modelBrowser.RData")
-renderDataTable(datatable(t.modelBrowser, filter = "top"))
+renderDataTable(datatable(caretModelInfoTable(F), filter = "top"))
 ```
 
 Train

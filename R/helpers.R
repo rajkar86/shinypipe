@@ -60,13 +60,12 @@ caretModelInfoTable <- function(compact = T,
   require(data.table)
   require(caret)
 
-  if (compact)
-    return(modelLookup()[,list(parameters = .N),by = c("model", "forClass", "forReg", "probModel")])
+  if (compact) {
+    dt <- as.data.table(modelLookup())
+    return(dt[,list(parameters = .N),by = c("model", "forClass", "forReg", "probModel")])
+  }
 
   if (use.cache) {
-    tempEnv <- new.env()
-    load("../data/caret_modelBrowser.RData", tempEnv)
-    dt <- tempEnv[["t.modelBrowser"]]
   } else {
     require(caret)
     getInfoTableFromObj <- function (model, info){

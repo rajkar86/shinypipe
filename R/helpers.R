@@ -66,6 +66,7 @@ caretModelInfoTable <- function(compact = T,
   }
 
   if (use.cache) {
+    dt <- as.data.table(shinypipe:::t.modelBrowser)
   } else {
     require(caret)
     getInfoTableFromObj <- function (model, info){

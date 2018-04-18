@@ -30,6 +30,12 @@ ui.caretModel <- function(id, models, selected = NULL) {
 #' @export
 s.caretModel <- function(input, output, session) {
 
+  require(shiny)
+  rv <- reactiveValues(method=NULL,
+                       type=NULL,
+                       expr=NULL,
+                       params=NULL)
+
   model.info <- reactive({
     req(input$method)
     getModelInfo(input$method, regex = F)[[input$method]]
@@ -41,12 +47,15 @@ s.caretModel <- function(input, output, session) {
   output$typeOut <- renderUI(shiny::radioButtons(session$ns("type"), NULL, model.type(), inline = T))
   output$paramsOut <- renderUI(ui.listOfVectors(session$ns("params"), model.params))
 
-  return(reactive({
-    r.params <- callModule(s.listOfVectors, "params", reactive(model.params()$parameter))
-    list(
-      method = input$method,
-      type = input$type,
-      expr = r.params()$expr,
-      params = r.params()$value
-  )}))
+  r.params <- callModule(s.listOfVectors, "params", reactive(model.params()$parameter))
+
+  observeEvent(input$method, rv$method <- input$method)
+  observeEvent(input$type, rv$type <- input$type)
+
+  observeEvent(r.params(),{
+    rv$expr   <- r.params()$expr
+    rv$params <- r.params()$value
+  })
+
+  return (reactive(reactiveValuesToList(rv)))
 }

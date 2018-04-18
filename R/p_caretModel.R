@@ -5,16 +5,19 @@
 #' as a tuning grid for caret::train
 #' @param id namespace id (string)
 #' @param models reactive list of models
-#' @param selected model to be selected by default
+#' @param selected model to be selected by default []
+#' @param show.type boolean to indicate whether type can be selected by the user
 #' @export
-ui.caretModel <- function(id, models, selected = NULL) {
+ui.caretModel <- function(id, models, selected = NULL, show.type = T) {
   ns <- NS(id)
 
   require(caret)
 
+  showType <- ifelse(show.type, "true", "false")
+
   l <- list(
     selectizeInput(ns("method"), "Method", models(), selected),
-    uiOutput(ns("typeOut")),
+    conditionalPanel(showType,uiOutput(ns("typeOut"))),
     uiOutput(ns("paramsOut"))
   )
 
@@ -26,7 +29,7 @@ ui.caretModel <- function(id, models, selected = NULL) {
 #' @param input shiny input
 #' @param output shiny output
 #' @param session shiny session
-#' @param return shiny session
+#' @param return reactive list
 #' @export
 s.caretModel <- function(input, output, session) {
 

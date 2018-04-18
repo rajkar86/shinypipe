@@ -69,7 +69,8 @@ observeEvent(input$help, showModal(modalDialog(
   "If left blank, a default training grid will be used, which can be used to later get an idea of suitable ranges. Otherwise, each parameter can either be a value or a range specified by any expression that evaluates to be a vector (like 1:4, c(1,2,5), seq(1,40,3) in case of a numeric field).  The tuning grid is shown in the Train tab. Make sure it's correct before you click on Train.",
   title = "Help", easyClose = T)))
 
-renderUI(ui.caretModel("m1", reactive(names(getModelInfo())), selected = "svmRadial"))
+renderUI(ui.caretModel("m1", reactive(names(getModelInfo())), 
+                       selected = "svmRadial", show.type = F))
 r.caretModel <- callModule(s.caretModel, "m1")
 
 r.model <- reactive(r.caretModel()$method)

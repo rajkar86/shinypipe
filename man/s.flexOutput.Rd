@@ -5,7 +5,8 @@
 \title{shinypipe server function for returning a data frame that can potentially be used
 as a tuning grid for caret::train}
 \usage{
-s.flexOutput(input, output, session, expr = "", type = "Print")
+s.flexOutput(input, output, session, expr = "", type = "Print",
+  envir = parent.frame())
 }
 \arguments{
 \item{input}{shiny input}

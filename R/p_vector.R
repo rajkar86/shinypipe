@@ -33,6 +33,7 @@ ui.vector <- function(id, type = "numeric", label = "Expression", value = "",
 s.vector <- function(input, output, session) {
 
   reactive({
+    req(input$expr)
     res <- toString(input$expr)
     if (res == "TRUE, FALSE")
       res <- c(T,F)
@@ -40,6 +41,6 @@ s.vector <- function(input, output, session) {
       res <- as.vector(eval(parse(text=(input$expr))))
 
     output$textOut <- renderTable(data.table(Values=toString(res)), colnames = F)
-    res
+    return (list(expr=input$expr, value=res))
   })
 }

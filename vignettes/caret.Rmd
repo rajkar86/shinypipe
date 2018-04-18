@@ -72,7 +72,7 @@ observeEvent(input$help, showModal(modalDialog(
 renderUI(ui.caretModel("m1", reactive(names(getModelInfo())), selected = "svmRadial"))
 r.caretModel <- callModule(s.caretModel, "m1")
 
-r.model <- reactive(r.caretModel()$model)
+r.model <- reactive(r.caretModel()$method)
 
 hr()
 

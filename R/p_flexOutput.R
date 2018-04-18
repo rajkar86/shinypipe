@@ -41,7 +41,7 @@ ui.flexOutput <- function(id, editable = T, plotHeight = 400) {
 #' @param type The type of UI, or its starting value if editable (one of "Print", "Table", or "Plot")
 #' @return a reactive list of type and expr used
 #' @export
-s.flexOutput <- function(input, output, session, expr = "", type = "Print") {
+s.flexOutput <- function(input, output, session, expr = "", type = "Print", envir = parent.frame()) {
   ns <- session$ns
 
   TYPES <- c("Print", "Table", "Plot")
@@ -74,11 +74,10 @@ s.flexOutput <- function(input, output, session, expr = "", type = "Print") {
     type <- ifelse(is.null(input$type), type, input$type)
     req(type)
     switch (type,
-            "Print" = {output$outPrint <- renderPrint(eval(exp))},
-            "Table" = {output$outTable <- renderDataTable(eval(exp))},
-            "Plot" =  {output$outPlot  <- renderPlot(eval(exp))}
+            "Print" = {output$outPrint <- renderPrint(eval(exp), envir=envir)},
+            "Table" = {output$outTable <- renderDataTable(eval(exp), envir=envir)},
+            "Plot" =  {output$outPlot  <- renderPlot(eval(exp), envir=envir)}
     )
-
   },
   error = function(err) { return(reactive(err)) },
   warning = function(warn) { return(reactive(warn)) }

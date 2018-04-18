@@ -239,7 +239,7 @@ r.model1Params <- callModule(s.caretModel, "model1")
 renderPrint(r.model1Params())
 ```
 
-Using *expand.grid* on the params part of the output to get the tune grid for training using caret.
+Using *expand.grid* on the params$value part of the output to get the tune grid for training using caret.
 
 ```{r}
 r.tuneGrid <- reactive(expand.grid(r.model1Params()$params))

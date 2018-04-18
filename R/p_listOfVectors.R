@@ -43,7 +43,8 @@ ui.listOfVectors <- function(id, table.params, showValues = F) {
 s.listOfVectors <- function(input, output, session, parameters) {
   reactive({
     r <- lapply(parameters(), function(p) callModule(s.vector, p)())
-    names(r) <- parameters()
-    r
+    expr <- lapply(r, function(r) r$expr); names(expr) <- parameters()
+    value <- lapply(r, function(r) r$value); names(value) <- parameters()
+    list(expr=expr, value=value)
   })
 }

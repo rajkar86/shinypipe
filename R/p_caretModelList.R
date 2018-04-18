@@ -5,9 +5,8 @@
 #' as a tuning grid for caret::train
 #' @param id namespace id (string)
 #' @param models reactive list of models
-#' @param selected model to be selected by default
 #' @export
-ui.caretModel <- function(id, models, selected = NULL) {
+ui.caretModelList <- function(id, models, selected = NULL) {
   ns <- NS(id)
 
   require(caret)
@@ -28,7 +27,7 @@ ui.caretModel <- function(id, models, selected = NULL) {
 #' @param session shiny session
 #' @param return shiny session
 #' @export
-s.caretModel <- function(input, output, session) {
+s.caretModelList <- function(input, output, session) {
 
   model.info <- reactive({
     req(input$method)

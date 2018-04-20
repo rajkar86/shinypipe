@@ -5,14 +5,16 @@
 \title{shinypipe UI for creating a data frame that can potentially be used
 as a tuning grid for caret::train}
 \usage{
-ui.caretModel(id, models, selected = NULL)
+ui.caretModel(id, models, selected = NULL, show.type = T)
 }
 \arguments{
 \item{id}{namespace id (string)}
 
 \item{models}{reactive list of models}
 
-\item{selected}{model to be selected by default}
+\item{selected}{model to be selected by default []}
+
+\item{show.type}{boolean to indicate whether type can be selected by the user}
 }
 \description{
 shinypipe UI for creating a data frame that can potentially be used

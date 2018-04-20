@@ -14,7 +14,7 @@ s.caretModel(input, output, session)
 
 \item{session}{shiny session}
 
-\item{return}{shiny session}
+\item{return}{reactive list}
 }
 \description{
 shinypipe server function for returning a data frame that can potentially be used

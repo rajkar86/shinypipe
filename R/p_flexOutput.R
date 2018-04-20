@@ -39,9 +39,10 @@ ui.flexOutput <- function(id, editable = T, plotHeight = 400) {
 #' @param session shiny session
 #' @param expr The expression to be evaluated as a string, or its starting value if editable
 #' @param type The type of UI, or its starting value if editable (one of "Print", "Table", or "Plot")
+#' @param envir The environment in which the expr needs to be evaluated
 #' @return a reactive list of type and expr used
 #' @export
-s.flexOutput <- function(input, output, session, expr = "", type = "Print", envir = parent.frame()) {
+s.flexOutput <- function(input, output, session, expr = "", type = "Print", envir) {
   ns <- session$ns
 
   TYPES <- c("Print", "Table", "Plot")
@@ -74,9 +75,9 @@ s.flexOutput <- function(input, output, session, expr = "", type = "Print", envi
     type <- ifelse(is.null(input$type), type, input$type)
     req(type)
     switch (type,
-            "Print" = {output$outPrint <- renderPrint(eval(exp), envir=envir)},
-            "Table" = {output$outTable <- renderDataTable(eval(exp), envir=envir)},
-            "Plot" =  {output$outPlot  <- renderPlot(eval(exp), envir=envir)}
+            "Print" = {output$outPrint <- renderPrint(eval(exp, envir=envir))},
+            "Table" = {output$outTable <- renderDataTable(eval(exp, envir=envir))},
+            "Plot" =  {output$outPlot  <- renderPlot(eval(exp, envir=envir))}
     )
   },
   error = function(err) { return(reactive(err)) },

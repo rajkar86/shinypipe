@@ -5,8 +5,8 @@
 \title{shinypipe server function for returning a data frame that can potentially be used
 as a tuning grid for caret::train}
 \usage{
-s.flexOutput(input, output, session, expr = "", type = "Print",
-  envir = parent.frame())
+s.flexOutput(input, output, session, envir, expr = "", type = "Print",
+  editable = T, rows = 1)
 }
 \arguments{
 \item{input}{shiny input}
@@ -15,9 +15,15 @@ s.flexOutput(input, output, session, expr = "", type = "Print",
 
 \item{session}{shiny session}
 
+\item{envir}{The environment in which the expr needs to be evaluated}
+
 \item{expr}{The expression to be evaluated as a string, or its starting value if editable}
 
 \item{type}{The type of UI, or its starting value if editable (one of "Print", "Table", or "Plot")}
+
+\item{editable}{whether the user can change the output type and output expression [Default: T]}
+
+\item{rows}{number of rows of text area input; only valid if editable is T [Default: 1]}
 }
 \value{
 a reactive list of type and expr used

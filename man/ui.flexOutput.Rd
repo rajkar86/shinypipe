@@ -9,8 +9,6 @@ ui.flexOutput(id, editable = T, plotHeight = 400)
 \arguments{
 \item{id}{namespace id (string)}
 
-\item{editable}{whether the user can change the output type and output expression [Default: F]}
-
 \item{plotHeight}{plot height when plot type is chosen [Default: 400]}
 }
 \description{

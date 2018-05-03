@@ -88,3 +88,26 @@ ui.plot("plot.sec", zoom=T)
 r.brushedData.sec <- callModule(s.plot, "plot.sec", r.plot, r.brushedData)
 
 ```
+
+Debug
+======
+
+```{r}
+ui.flexOutput("flex-non-edit")
+invisible(callModule(s.flexOutput, "flex-non-edit", environment(), "ls()", editable=F))
+
+ui.flexOutput("flex")
+invisible(callModule(s.flexOutput, "flex", environment(), "r.data()", "Table", rows=5))
+```
+
+<!-- ### -->
+<!-- ```{r} -->
+<!-- ui.flexOutput("flex") -->
+<!-- invisible(callModule(s.flexOutput, "flex", environment(), "ls()", editable=F)) -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- ui.flexOutput("flex1", F) -->
+<!-- invisible(callModule(s.flexOutput, "flex1", "ls()", envir = environment())) -->
+<!-- ``` -->

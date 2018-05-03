@@ -174,7 +174,11 @@ renderPrint({f <- r.svmModel(); f$call <- NULL; return(summary(f));})
 
 #### RMS error
 ```{r}
-renderPrint(sqrt(mean((predict(r.svmModel()) - r.data()[,r.fml.y(), with=F])^2)))
+renderPrint({
+  req(r.svmModel())
+  req(r.fml.y())
+  sqrt(mean((predict(r.svmModel()) - r.data()[,r.fml.y(), with=F])^2))
+})
 ```
 
 ### Using params: Example 2
@@ -260,3 +264,13 @@ r.train <- reactive({
 
 renderPrint(r.train())
 ```
+
+### Debugging within shiny app
+
+```{r}
+ui.flexOutput("flex", T)
+invisible(callModule(s.flexOutput, "flex", environment(), "ls()"))
+```
+
+
+

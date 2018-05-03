@@ -44,7 +44,12 @@ Sidebar {.sidebar}
 ```{r}
 ui.fread("file", list(label="Alternative dataset (optional)"), sep = NULL, header=NULL)
 r.dataF <- callModule(s.fread, "file", list(sep=",", header=T))
-observe(rv$table <- r.dataF())
+observe({
+  dt <- r.dataF()
+  if ("Label" %in% names(dt))
+    dt$Label <- as.factor(dt$Label)
+  rv$table <- dt
+})
 
 hr()
 sliderInput("testPct", "% of test data", 5, 50, 25)

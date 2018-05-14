@@ -77,7 +77,8 @@ s.plot <- function(input, output, session, plot, data,
 
   convertLimitForType <- function(lim, datatype, dataRange = NULL) {
     # origin used here may be exposed, if necessary
-    ret <- switch (datatype[[1]],
+    datatype <- datatype[[1]]
+    ret <- switch (datatype,
             "Date" = as.Date(lim, origin="1970-01-01"),
             "POSIXct" = as.POSIXct(lim, origin = "1970-01-01"),
             lim

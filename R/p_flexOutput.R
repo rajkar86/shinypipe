@@ -33,8 +33,7 @@ ui.flexOutput <- function(id, editable = T, plotHeight = 400) {
   )
 }
 
-#' shinypipe server function for returning a data frame that can potentially be used
-#' as a tuning grid for caret::train
+#' shinypipe server function for ui.flexOutput
 #' @param input shiny input
 #' @param output shiny output
 #' @param session shiny session

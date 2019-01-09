@@ -23,6 +23,25 @@ signedColorStyleInterval <- function(data, num.breaks = 20) {
   return(DT::styleInterval(brks, clrs))
 }
 
+#' Helper function to create DT::styleInterval for a given data, in which
+#' Numbers are mapped to shades of green
+#' @param data a vector of possible values
+#' @param num.breaks number of color breaks
+#' @export
+singleShadeColorInterval <- function(data, num.breaks = 20) {
+  
+  require(DT)
+  rng <- range(data)
+  
+  brks <- seq(rng[1], rng[2], length.out = num.breaks)
+  
+  clrs <- round(seq(255, 40, length.out = num.breaks + 1), 0) %>% 
+    {paste0("rgb(", .,",255,", ., ")")}
+  
+  return(DT::styleInterval(brks, clrs))
+}
+
+
 #' Take a data.table and adds a column indicating whether that row is an outlier
 #' based on cook's distance with respect to a linear regression using the provided formula
 #' @param dt a data.table obj

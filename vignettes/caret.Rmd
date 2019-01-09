@@ -56,6 +56,7 @@ sliderInput("testPct", "% of test data", 5, 50, 25)
 observeEvent(input$testPct, rv$testIndices <- createDataPartition(1:rv$table[,.N], p=(input$testPct/100), list=F))
 
 hr()
+
 renderUI({
   colsY <- list(choices = names(r.data()))
   colsX <- list(choices = names(r.data()), selected = names(r.data())[-1])

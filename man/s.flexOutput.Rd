@@ -2,8 +2,7 @@
 % Please edit documentation in R/p_flexOutput.R
 \name{s.flexOutput}
 \alias{s.flexOutput}
-\title{shinypipe server function for returning a data frame that can potentially be used
-as a tuning grid for caret::train}
+\title{shinypipe server function for ui.flexOutput}
 \usage{
 s.flexOutput(input, output, session, envir, expr = "", type = "Print",
   editable = T, rows = 1)
@@ -29,6 +28,5 @@ s.flexOutput(input, output, session, envir, expr = "", type = "Print",
 a reactive list of type and expr used
 }
 \description{
-shinypipe server function for returning a data frame that can potentially be used
-as a tuning grid for caret::train
+shinypipe server function for ui.flexOutput
 }

@@ -4,7 +4,8 @@
 \alias{ui.formula}
 \title{shinypipe UI for getting creating an R formula}
 \usage{
-ui.formula(id, y, x, intercept = NULL, simpleFormula = F, theme = "large")
+ui.formula(id, y, x, intercept = NULL, simpleFormula = F,
+  theme = "large")
 }
 \arguments{
 \item{id}{namespace id (string)}

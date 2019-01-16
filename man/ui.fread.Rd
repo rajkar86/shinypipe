@@ -5,7 +5,8 @@
 \title{shinypipe UI for getting user input to
 the function fread}
 \usage{
-ui.fread(id, fileIn = list(label = "Input file"), sep = ",", header = T)
+ui.fread(id, fileIn = list(label = "Input file"), sep = ",",
+  header = T)
 }
 \arguments{
 \item{id}{namespace id (string)}

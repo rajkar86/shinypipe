@@ -27,8 +27,9 @@ signedColorStyleInterval <- function(data, num.breaks = 20) {
 #' Numbers are mapped to shades of green
 #' @param data a vector of possible values
 #' @param num.breaks number of color breaks
+#' @param reverse reverse the color scale [default: F]
 #' @export
-singleShadeColorInterval <- function(data, num.breaks = 20) {
+singleShadeColorInterval <- function(data, num.breaks = 20, reverse = F) {
   
   require(DT)
   rng <- range(data)
@@ -37,6 +38,9 @@ singleShadeColorInterval <- function(data, num.breaks = 20) {
   
   clrs <- round(seq(255, 40, length.out = num.breaks + 1), 0) %>% 
     {paste0("rgb(", .,",255,", ., ")")}
+  
+  if (reverse)
+    clrs <-rev(clrs)
   
   return(DT::styleInterval(brks, clrs))
 }

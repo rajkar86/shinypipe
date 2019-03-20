@@ -59,7 +59,6 @@ cooksdOutlier <- function (dt, fml, thresh = 4, outlier.colname = "outlier") {
   dt[, eval(outlier.colname) := (cooksd > mean(cooksd) * thresh)]
 }
 
-
 #' Take a data.table and return the columns with only a unique element as a separate table with
 #' one row and the rest of the data.table separately
 #' @param dt a data.table obj

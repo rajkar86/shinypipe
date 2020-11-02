@@ -1,7 +1,7 @@
 # shinypipe
 R Package for shiny modules to be used as reusable components in building data processing pipelines
 
-I created these because I was finding them useful for my own projects. Some examples of the reusable modules
+I created these because I was finding them useful for my own projects. Some examples of the reusable modules in this package.
 
 ## Demos
 

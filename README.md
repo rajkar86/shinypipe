@@ -1,6 +1,11 @@
 # shinypipe
 R Package for shiny modules to be used as reusable components in building data processing pipelines
 
+Installation:
+```r
+devtools::install_github("rajkar86/shinypipe")
+```
+
 I created these because I was finding them useful for my own projects. Some examples of the reusable modules in this package.
 
 ## Demos

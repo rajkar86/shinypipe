@@ -1,5 +1,5 @@
 # shinypipe
-R Package for shiny modules to be used as reusable components in building data processing pipelines
+R Package for shiny modules to be used as reusable components for building data-science related apps. 
 
 Installation:
 ```r

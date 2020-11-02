@@ -6,7 +6,7 @@ Installation:
 devtools::install_github("rajkar86/shinypipe")
 ```
 
-I created these because I was finding them useful for my own projects. Some examples of the reusable modules in this package are shown below as demos. More examples are available in the vignettes.
+I created this package because I was finding these modules useful for my own projects. Some examples of the reusable modules in this package are shown below as demos. More examples are available in the vignettes.
 
 ## Selected Demos
 

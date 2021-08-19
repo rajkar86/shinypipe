@@ -20,7 +20,7 @@ library(flexdashboard)
 
 library(e1071)
 library(kernlab)
-library(earth)
+#library(earth)
 
 runWithoutInstall <- T
 ifelse(runWithoutInstall,
@@ -53,7 +53,9 @@ observe({
 
 hr()
 sliderInput("testPct", "% of test data", 5, 50, 25)
-observeEvent(input$testPct, rv$testIndices <- createDataPartition(1:rv$table[,.N], p=(input$testPct/100), list=F))
+observeEvent(input$testPct,{
+  rv$testIndices <- createDataPartition(1:nrow(rv$table), p=(input$testPct/100), list=F)
+})
 
 hr()
 

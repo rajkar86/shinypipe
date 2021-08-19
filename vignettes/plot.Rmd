@@ -64,7 +64,7 @@ r.brushedData.modify <- callModule(s.plot, "plot.modify", r.plot.modify, r.data)
 ```{r}
 renderDataTable({
   tt <- r.brushedData.modify()
-  if (tt[,.N] == 0) return (r.data())
+  if (nrow(tt) == 0) return (r.data())
   tt
 })
 ```
